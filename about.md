@@ -17,9 +17,3 @@ Explore our range of services and discover how we can help transform your ideas 
 Feel free to send me an email if you have any questions or just want to say hi. **contact@adrianavramescu.eu**
 
 For business inquiries, please contact me at **business@adrianavramescu.eu**
-
-
-* Ilie Adrian Avramescu PFA
-* CUI: xxxxx
-* Reg. Com.:
-* VAT: 

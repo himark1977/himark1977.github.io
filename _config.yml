@@ -1,12 +1,15 @@
 title: Ilie Adrian Avramescu
 author:
-  name: Ilie Adrian Avramescu
+  name: Ilie Adrian Avramescu PFA
   email: contact@adrianavramescu.eu
 
 # The `>` after `description:` means to ignore line-breaks until next key.
 # If you want to omit the line-break after the end of text, use `>-` instead.
 description: >
-  Good to see you!
+  CUI: xxxxx
+  Reg. Com.: Xxx
+  VAT:  X
+
 # Build settings
 
 theme: minima

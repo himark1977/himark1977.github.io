@@ -4,7 +4,7 @@ title: About
 permalink: /about/
 ---
 
-    [b]PFA Ilie Adrian Avramescu – Comprehensive Solutions in Game Development, Computing, and IT Services[/b]
+    **PFA Ilie Adrian Avramescu – Comprehensive Solutions in Game Development, Computing, and IT Services**
 
     Welcome to PFA Ilie Adrian Avramescu, a versatile technology provider specializing in game development, computing equipment manufacturing, and IT consulting. Our expertise spans multiple areas, reflecting our commitment to innovation and quality across diverse projects.
 
@@ -14,8 +14,8 @@ permalink: /about/
 
     Explore our range of services and discover how we can help transform your ideas into impactful solutions for today’s digital world.
 
-    Feel free to send me an email if you have any questions or just want to say hi. [b]contact@adrianavramescu.eu[/b]
-    For business inquiries, please contact me at [b]business@adrianavramescu.eu
+    Feel free to send me an email if you have any questions or just want to say hi. **contact@adrianavramescu.eu**
+    For business inquiries, please contact me at **business@adrianavramescu.eu**
 
 
   Ilie Adrian Avramescu PFA

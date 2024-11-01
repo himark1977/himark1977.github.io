@@ -15,6 +15,7 @@ Our services extend to publishing other software products (5829), offering tailo
 Explore our range of services and discover how we can help transform your ideas into impactful solutions for today’s digital world.
 
 Feel free to send me an email if you have any questions or just want to say hi. **contact@adrianavramescu.eu**
+
 For business inquiries, please contact me at **business@adrianavramescu.eu**
 
 

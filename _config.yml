@@ -9,7 +9,7 @@ description: >
   Good things come to those who wait, but better things come to those who go out and get them.
 # Build settings
 
-theme: minima
+theme: cayman
 
 plugins:
   - jekyll-feed

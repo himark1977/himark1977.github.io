@@ -1,10 +1,10 @@
 ---
 layout: page
 title: Contact
-permalink: /Contact/
+permalink: /contact/
 ---
 
-Have a question? Feel free to send an email to [b]contact@adrianavramescu.eu[/b]
+Have a question? Feel free to send an email to **contact@adrianavramescu.eu**
 
-For business inquiries, please contact me at [b]business@adrianavramescu.eu[/b]
+For business inquiries, please contact me at **business@adrianavramescu.eu**
 

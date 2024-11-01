@@ -6,12 +6,7 @@ author:
 # The `>` after `description:` means to ignore line-breaks until next key.
 # If you want to omit the line-break after the end of text, use `>-` instead.
 description: >
-  CUI: xxxxx
-
-  Reg. Com.: Xxx
-  
-  VAT:  X
-
+  Good things come to those who wait, but better things come to those who go out and get them.
 # Build settings
 
 theme: minima

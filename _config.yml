@@ -9,7 +9,7 @@ description: >
   Good things come to those who wait, but better things come to those who go out and get them.
 # Build settings
 
-theme: pages-themes/cayman@v0.2.0
+theme: minima
 
 plugins:
   - jekyll-feed
@@ -17,7 +17,6 @@ plugins:
   - jekyll-remote-theme
 
 # Theme-specific settings
-show_downloads: false
 minima:
   # Minima date format.
   # Refer to https://shopify.github.io/liquid/filters/date/ if you want to customize this.

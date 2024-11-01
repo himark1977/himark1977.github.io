@@ -1,13 +1,12 @@
-title: blog
+title: Ilie Adrian Avramescu
 author:
-  name: himark1977 (evokzh)
-  email: me@evokzh.space
+  name: Ilie Adrian Avramescu
+  email: contact@adrianavramescu.eu
 
 # The `>` after `description:` means to ignore line-breaks until next key.
 # If you want to omit the line-break after the end of text, use `>-` instead.
 description: >
-  Hey it's me!
-
+  Good to see you!
 # Build settings
 
 theme: minima

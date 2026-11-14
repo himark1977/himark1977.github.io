@@ -53,6 +53,11 @@
                 <span class="text-slate-400">CAL STATUS:</span>
                 <span id="calStatusBadge" class="text-amber-400 font-semibold">Uncalibrated (RAW)</span>
             </div>
+            <label title="Import an external Touchstone .s1p file from another VNA or simulation tool (like Qucs, ADS, or Python) to analyze custom RF measurements" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600 cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Import .s1p
+                <input type="file" id="importFile" accept=".s1p" onchange="importTouchstone(event)" class="hidden">
+            </label>
             <button onclick="exportTouchstone()" title="Export simulated measurement data in standard Touchstone .s1p format for use in RF software like ADS or Python scikit-rf" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-blue-600">
                 <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                 Export .s1p
@@ -302,6 +307,10 @@
                     <h4 class="font-bold text-white mb-1 text-sm text-blue-400">3. Understanding DUT Behaviors</h4>
                     <p>When you click different DUTs, notice how the trace shifts: <strong>Matched Load</strong> gives a flat low curve; <strong>Open/Short</strong> bounce up to 0 dB reflection; <strong>Filters</strong> show sharp frequency cutoffs; and <strong>Antennas</strong> display resonant impedance dips.</p>
                 </div>
+                <div>
+                    <h4 class="font-bold text-white mb-1 text-sm text-blue-400">4. Importing Touchstone (.s1p) Files</h4>
+                    <p>You can click the <strong>Import .s1p</strong> button in the top header to load real-world 1-port Touchstone files. The VNA will automatically parse the frequency and complex reflection data ($S_{11}$ Real/Imaginary or Magnitude/Angle) and render it on your screen!</p>
+                </div>
             </div>
             <div class="mt-6 flex justify-end">
                 <button onclick="closeHelpModal()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-xs font-semibold rounded text-white transition">Got it, Let's Experiment!</button>
@@ -328,6 +337,7 @@
         let s11Imag = [];
         let s21Mag = [];
         let s21Phase = [];
+        let isImportedData = false;
 
         // DOM elements
         const canvas = document.getElementById('vnaCanvas');
@@ -339,6 +349,90 @@
             computeDUTTrace();
             drawVNA();
             updateMarkerDisplay();
+        }
+
+        // Compute simulated DUT reflection (S11) and transmission (S21) parameters
+        function computeDUTTrace() {
+            s11Mag = [];
+            s11Phase = [];
+            s11Real = [];
+            s11Imag = [];
+            s21Mag = [];
+            s21Phase = [];
+
+            const start = parseFloat(document.getElementById('startFreqInput').value) * 1e6;
+            const stop = parseFloat(document.getElementById('stopFreqInput').value) * 1e6;
+
+            for (let i = 0; i < numPoints; i++) {
+                let f = frequencies[i];
+                let mag = -30.0;
+                let phase = 0.0;
+                let s21m = -0.5;
+                let s21p = 0.0;
+
+                if (currentDUT === 'matched') {
+                    mag = -35.0 + (Math.random() - 0.5) * 2;
+                    phase = (Math.random() - 0.5) * 10;
+                    s21m = -0.2;
+                    s21p = - (f / 1e9) * 20;
+                } else if (currentDUT === 'open') {
+                    mag = -0.05;
+                    phase = 0.0;
+                    s21m = -60.0;
+                    s21p = 180.0;
+                } else if (currentDUT === 'short') {
+                    mag = -0.05;
+                    phase = -180.0;
+                    s21m = -60.0;
+                    s21p = 180.0;
+                } else if (currentDUT === 'filter') {
+                    // Low-pass filter cutoff at 1.5 GHz
+                    let cutoff = 1.5e9;
+                    if (f < cutoff) {
+                        mag = -25.0 - Math.sin(f / cutoff * Math.PI) * 10;
+                        s21m = -0.5 - (f / cutoff) * 1.5;
+                    } else {
+                        let ratio = (f - cutoff) / (stop - cutoff || 1);
+                        mag = -1.0 + ratio * 0.5;
+                        s21m = -10.0 - ratio * 40.0;
+                    }
+                    phase = ((f / 1e9) * -120) % 360;
+                    s21p = ((f / 1e9) * -180) % 360;
+                } else if (currentDUT === 'antenna') {
+                    // Resonant antenna at 2.4 GHz
+                    let resF = 2.4e9;
+                    let diff = Math.abs(f - resF);
+                    let span = (stop - start) || 1e9;
+                    let normDiff = diff / span;
+                    mag = -28.0 * Math.exp(-Math.pow(diff / (0.15 * span), 2)) - 3.0;
+                    phase = (Math.atan2(diff, 1e8) * 180 / Math.PI) - 90;
+                    s21m = -20.0 - mag * 0.5;
+                    s21p = phase;
+                } else if (currentDUT === 'mismatch') {
+                    // 75 ohm mismatch in 50 ohm system -> Return loss ~ -14 dB
+                    mag = -14.0 + Math.sin(i * 0.1) * 0.5;
+                    phase = 45.0;
+                    s21m = -1.5;
+                    s21p = -10.0;
+                }
+
+                // Add calibration error if uncalibrated
+                if (!isCalibrated && !isImportedData) {
+                    let ripple = Math.sin(i * 0.15) * 1.5 + Math.cos(i * 0.05) * 1.0;
+                    mag = Math.min(0, mag + ripple);
+                    phase += Math.sin(i * 0.1) * 8.0;
+                }
+
+                s11Mag.push(mag);
+                s11Phase.push(phase);
+                s21Mag.push(s21m);
+                s21Phase.push(s21p);
+
+                let gammaLin = Math.pow(10, mag / 20);
+                let rad = phase * Math.PI / 180;
+                s11Real.push(gammaLin * Math.cos(rad));
+                s11Imag.push(gammaLin * Math.sin(rad));
+            }
         }
 
         function updateFrequencyArray() {
@@ -395,6 +489,7 @@
 
         function selectDUT(dutType) {
             currentDUT = dutType;
+            isImportedData = false;
             
             const buttons = ['matched', 'open', 'short', 'filter', 'antenna', 'mismatch'];
             buttons.forEach(b => {
@@ -441,75 +536,18 @@
             tutorEl.innerHTML = text;
         }
 
-        // Compute S11 & S21 complex values
-        function computeDUTTrace() {
-            s11Mag = [];
-            s11Phase = [];
-            s11Real = [];
-            s11Imag = [];
-            s21Mag = [];
-            s21Phase = [];
-
-            for (let i = 0; i < numPoints; i++) {
-                let f = frequencies[i]; // Hz
-                let fMHz = f / 1e6;
-                let gammaMag = 0;
-                let gammaPhase = 0;
-                let transMag = -1.0; // S21 dB
-
-                if (currentDUT === 'matched') {
-                    gammaMag = 0.015 + 0.005 * Math.sin(i / 30);
-                    gammaPhase = (i * 15) % 360;
-                    transMag = -0.5 - 0.1 * (fMHz / 3000);
-                } else if (currentDUT === 'open') {
-                    gammaMag = 0.98 + 0.01 * Math.cos(i / 50);
-                    gammaPhase = (- (fMHz / 3000) * 720) % 360;
-                    transMag = -55.0; // fully blocked
-                } else if (currentDUT === 'short') {
-                    gammaMag = 0.98 + 0.01 * Math.sin(i / 50);
-                    gammaPhase = (180 - (fMHz / 3000) * 720) % 360;
-                    transMag = -55.0;
-                } else if (currentDUT === 'filter') {
-                    let cutoff = 1500;
-                    if (fMHz < cutoff) {
-                        gammaMag = 0.08 + 0.05 * (fMHz / cutoff);
-                        transMag = -0.8 - 1.5 * Math.pow(fMHz / cutoff, 4); // passband insertion loss
-                    } else {
-                        let excess = (fMHz - cutoff) / 1500;
-                        gammaMag = 0.85 - 0.1 * Math.exp(-excess);
-                        transMag = -15 - 35 * (fMHz - cutoff) / 1500; // stopband attenuation
-                    }
-                    gammaPhase = (-fMHz / 10) % 360;
-                } else if (currentDUT === 'antenna') {
-                    let resonantFreq = 2400;
-                    let diff = Math.abs(fMHz - resonantFreq);
-                    let qFactorResponse = Math.exp(-Math.pow(diff / 120, 2));
-                    gammaMag = 0.9 - 0.85 * qFactorResponse;
-                    gammaPhase = (qFactorResponse * 180 - (fMHz / 10)) % 360;
-                    transMag = -3.0 - 15 * (1 - qFactorResponse); // power radiated out into space
-                } else if (currentDUT === 'mismatch') {
-                    gammaMag = 0.20 + 0.01 * Math.sin(i / 20);
-                    gammaPhase = (- (fMHz / 500) * 180) % 360;
-                    transMag = -3.5;
-                }
-
-                if (!isCalibrated) {
-                    gammaMag += 0.08 * Math.sin(i / 15);
-                    gammaMag = Math.max(0.001, Math.min(1.05, gammaMag));
-                    transMag += (Math.random() - 0.5) * 0.4;
-                }
-
-                let magDb = 20 * Math.log10(Math.max(1e-4, gammaMag));
-                s11Mag.push(magDb);
-                s11Phase.push(gammaPhase);
-                s21Mag.push(Math.max(-60, Math.min(5, transMag)));
-                s21Phase.push((gammaPhase + 90) % 360);
-
-                let rad = gammaPhase * Math.PI / 180;
-                let r = Math.min(1.0, gammaMag);
-                s11Real.push(r * Math.cos(rad));
-                s11Imag.push(r * Math.sin(rad));
-            }
+        // Dedicated educational helper to explain Phase when user asks or clicks
+        function explainPhaseConcept() {
+            const tutorEl = document.getElementById('tutorText');
+            tutorEl.innerHTML = `
+                <p class="font-semibold text-sky-400 mb-1">💡 What is RF Phase (°)?</p>
+                <p><strong>Phase</strong> measures the time delay or angular shift (from 0° to 360°, or -180° to +180°) between the <em>incident wave</em> sent by the VNA and the <em>reflected wave</em> bounced back from the DUT.</p>
+                <ul class="list-disc pl-4 mt-1.5 space-y-1 text-slate-300">
+                    <li><strong>Short Circuit (-180° / 180°):</strong> Reverses wave polarity completely upon impact.</li>
+                    <li><strong>Open Circuit (0°):</strong> Bounces back in-phase without inversion.</li>
+                    <li><strong>Electrical Length:</strong> As frequency increases, electrical delay causes the phase to wrap around in cycles. This is how VNA engineers calculate precise cable lengths and distance-to-fault!</li>
+                </ul>
+            `;
         }
 
         function setMeasurementMode(mode) {
@@ -543,6 +581,11 @@
                 'vswr': 'VSWR (Voltage Standing Wave Ratio)'
             };
             document.getElementById('displayModeLabel').innerText = labels[mode];
+
+            // If user switches to phase mode, automatically display the Phase educational guide!
+            if (mode === 'phase') {
+                explainPhaseConcept();
+            }
 
             drawVNA();
             updateMarkerDisplay();
@@ -605,12 +648,19 @@
             document.getElementById('mFreq').innerText = fText;
             document.getElementById('markerSliderVal').innerText = fText;
 
-            let mag = s11Mag[markerIndex];
-            let phase = s11Phase[markerIndex];
+            // Safeguard array lookups
+            if (!s11Mag || s11Mag.length <= markerIndex) {
+                computeDUTTrace();
+            }
+
+            let mag = s11Mag[markerIndex] !== undefined ? s11Mag[markerIndex] : -20;
+            let phase = s11Phase[markerIndex] !== undefined ? s11Phase[markerIndex] : 0;
             
             if (currentMode === 's21') {
-                document.getElementById('mVal1').innerHTML = `S21: <span id="mMag" class="text-white font-semibold">${s21Mag[markerIndex].toFixed(2)} dB</span>`;
-                document.getElementById('mVal2').innerHTML = `Phase: <span id="mPhase" class="text-white font-semibold">${s21Phase[markerIndex].toFixed(1)}°</span>`;
+                let s21Val = s21Mag[markerIndex] !== undefined ? s21Mag[markerIndex] : -3;
+                let s21PhaseVal = s21Phase[markerIndex] !== undefined ? s21Phase[markerIndex] : 0;
+                document.getElementById('mVal1').innerHTML = `S21: <span id="mMag" class="text-white font-semibold">${s21Val.toFixed(2)} dB</span>`;
+                document.getElementById('mVal2').innerHTML = `Phase: <span id="mPhase" class="text-white font-semibold">${s21PhaseVal.toFixed(1)}°</span>`;
             } else {
                 document.getElementById('mVal1').innerHTML = `Mag: <span id="mMag" class="text-white font-semibold">${mag.toFixed(2)} dB</span>`;
                 document.getElementById('mVal2').innerHTML = `Phase: <span id="mPhase" class="text-white font-semibold">${phase.toFixed(1)}°</span>`;
@@ -633,7 +683,6 @@
                 s1pData += `${fMHz.toFixed(4)} ${re.toFixed(4)} ${im.toFixed(4)}\n`;
             }
 
-            // Fallback copy or download
             const blob = new Blob([s1pData], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -643,6 +692,131 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // Import Touchstone .s1p file handler
+        function importTouchstone(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                parseTouchstoneData(content, file.name);
+            };
+            reader.readAsText(file);
+        }
+
+        function parseTouchstoneData(text, filename) {
+            const lines = text.split('\n');
+            let importedFreqs = [];
+            let importedRe = [];
+            let importedIm = [];
+            let formatType = 'RI'; // Default Real/Imag
+            let freqMultiplier = 1e6; // Default MHz
+
+            for (let line of lines) {
+                line = line.trim();
+                if (!line || line.startsWith('!')) continue;
+
+                if (line.startsWith('#')) {
+                    // Option line e.g., # GHz S MA R 50
+                    const upper = line.toUpperCase();
+                    if (upper.includes('GHZ')) freqMultiplier = 1e9;
+                    else if (upper.includes('KHZ')) freqMultiplier = 1e3;
+                    else if (upper.includes('MHZ')) freqMultiplier = 1e6;
+
+                    if (upper.includes('MA')) formatType = 'MA'; // Magnitude / Angle
+                    else if (upper.includes('DB')) formatType = 'DB'; // dB / Angle
+                    else if (upper.includes('RI')) formatType = 'RI'; // Real / Imag
+                    continue;
+                }
+
+                const parts = line.split(/\s+/);
+                if (parts.length >= 3) {
+                    let fVal = parseFloat(parts[0]) * freqMultiplier;
+                    let p1 = parseFloat(parts[1]);
+                    let p2 = parseFloat(parts[2]);
+
+                    let re = 0, im = 0;
+                    if (formatType === 'RI') {
+                        re = p1;
+                        im = p2;
+                    } else if (formatType === 'MA') {
+                        let rad = p2 * Math.PI / 180;
+                        re = p1 * Math.cos(rad);
+                        im = p1 * Math.sin(rad);
+                    } else if (formatType === 'DB') {
+                        let linMag = Math.pow(10, p1 / 20);
+                        let rad = p2 * Math.PI / 180;
+                        re = linMag * Math.cos(rad);
+                        im = linMag * Math.sin(rad);
+                    }
+
+                    importedFreqs.push(fVal);
+                    importedRe.push(re);
+                    importedIm.push(im);
+                }
+            }
+
+            if (importedFreqs.length < 2) {
+                alert("Error: Could not parse valid S11 data points from the uploaded .s1p file.");
+                return;
+            }
+
+            // Resample / map to our numPoints buffer
+            frequencies = [];
+            s11Real = [];
+            s11Imag = [];
+            s11Mag = [];
+            s11Phase = [];
+            s21Mag = [];
+            s21Phase = [];
+
+            const minF = importedFreqs[0];
+            const maxF = importedFreqs[importedFreqs.length - 1];
+
+            document.getElementById('startFreqInput').value = (minF / 1e6).toFixed(2);
+            document.getElementById('stopFreqInput').value = (maxF / 1e6).toFixed(2);
+
+            for (let i = 0; i < numPoints; i++) {
+                let f = minF + (maxF - minF) * (i / (numPoints - 1));
+                frequencies.push(f);
+
+                // Find nearest index in imported data
+                let idx = 0;
+                for (let j = 0; j < importedFreqs.length; j++) {
+                    if (importedFreqs[j] >= f) {
+                        idx = j;
+                        break;
+                    }
+                    idx = j;
+                }
+
+                let re = importedRe[idx];
+                let im = importedIm[idx];
+                s11Real.push(re);
+                s11Imag.push(im);
+
+                let magLin = Math.sqrt(re * re + im * im);
+                let magDb = 20 * Math.log10(Math.max(1e-5, magLin));
+                let phaseDeg = Math.atan2(im, re) * (180 / Math.PI);
+
+                s11Mag.push(magDb);
+                s11Phase.push(phaseDeg);
+                s21Mag.push(-10 - magDb * 0.5); // Simulated pass-through response
+                s21Phase.push((phaseDeg + 90) % 360);
+            }
+
+            isImportedData = true;
+            document.getElementById('activeDUTName').innerText = `DUT: Imported File (${filename})`;
+            document.getElementById('hudFreqSpan').innerText = `Start: ${(minF/1e6).toFixed(1)} MHz | Stop: ${(maxF/1e6).toFixed(1)} MHz`;
+
+            markerIndex = Math.floor(numPoints / 2);
+            document.getElementById('markerSlider').value = 500;
+
+            drawVNA();
+            updateMarkerDisplay();
         }
 
         // Main Drawing Function for VNA Canvas

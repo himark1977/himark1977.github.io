@@ -69,17 +69,24 @@
                     <span class="text-slate-400">CAL STATUS:</span>
                     <span id="calStatusBadge" class="text-amber-400 font-semibold">Uncalibrated (RAW)</span>
                 </div>
-                <label title="Import an external Touchstone .s1p file from another VNA or simulation tool (like Qucs, ADS, or Python) to analyze custom RF measurements" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600 cursor-pointer">
+                <button onclick="performCalibration()" id="calBtn" title="Perform simulated Short-Open-Load calibration to remove systematic measurement errors" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600">
+                    Perform SOL Cal
+                </button>
+                <button onclick="openLearningHubModal()" title="Open interactive RF Self-Tutor and Guided Exercises" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-emerald-600 text-white shadow">
+                    <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Interactive RF Self-Tutor Hub
+                </button>
+                <label title="Import an external Touchstone .s1p file from another VNA or simulation tool" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600 cursor-pointer">
                     <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                     Import .s1p
                     <input type="file" id="importFile" accept=".s1p" onchange="importTouchstone(event)" class="hidden">
                 </label>
-                <button onclick="exportTouchstone()" title="Export simulated measurement data in standard Touchstone .s1p format for use in RF software like ADS or Python scikit-rf" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-blue-600">
+                <button onclick="exportTouchstone()" title="Export simulated measurement data in standard Touchstone .s1p format" class="px-3 py-1.5 bg-blue-700 hover:bg-blue-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-blue-600">
                     <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     Export .s1p
                 </button>
             </div>
-            <button onclick="openHelpModal()" title="Opens comprehensive user guide, calibration tutorials, and RF S-parameter theory handbook" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600">
+            <button onclick="openHelpModal()" title="Opens comprehensive user guide and RF S-parameter theory handbook" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded transition flex items-center gap-1.5 border border-slate-600">
                 <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 VNA Learning Guide
             </button>
@@ -147,7 +154,7 @@
                         <div class="font-bold text-xs">Log Mag (S11)</div>
                         <div class="text-[10px] text-blue-100 opacity-90 mt-1">Return loss in dB</div>
                     </button>
-                    <button onclick="setMeasurementMode('s21')" id="btnModes21" title="S21 Transmission: Measures insertion loss/gain from Port 1 to Port 2 in dB. Essential for amplifiers & filters." class="p-2.5 rounded text-left transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col justify-between border border-slate-700">
+                    <button onclick="setMeasurementMode('s21')" id="btnModes21" title="S21 Transmission: Measures insertion loss/gain from Port 1 to Port 2 in dB." class="p-2.5 rounded text-left transition bg-slate-800 text-slate-300 hover:bg-slate-700 flex flex-col justify-between border border-slate-700">
                         <div class="font-bold text-xs text-white">S21 Trans (dB)</div>
                         <div class="text-[10px] text-slate-400 mt-1">Insertion loss / gain</div>
                     </button>
@@ -165,131 +172,107 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Live VNA Formula & Math Derivation Panel -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        Live Marker M1 RF Equations & Substituted Values
+                    </h3>
+                    <span class="text-[10px] mono bg-slate-900 text-slate-400 px-2 py-0.5 rounded border border-slate-800">Real-Time Math</span>
+                </div>
+                <div id="vnaLiveFormulas" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] mono bg-slate-950/80 p-2.5 rounded border border-slate-800 text-slate-300">
+                    <!-- Populated dynamically by updateMarkerDisplay() -->
+                </div>
+            </div>
         </section>
 
-        <!-- Right Column: Controls, DUTs & Educational Companion (5 cols) -->
-        <section class="lg:col-span-5 flex flex-col gap-4">
+        <!-- Right Column: Stimulus, DUT Selector & Educational Companion (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-3">
             
-            <!-- DUT (Device Under Test) Selector Panel with Detailed Learning Cards -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg">
-                <div class="mb-3">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center justify-between">
-                        <span>1. Select Device Under Test (DUT)</span>
-                        <span class="text-xs font-normal text-blue-400 mono">System Z₀ = 50Ω</span>
-                    </h2>
-                    <p class="text-xs text-slate-400 mt-0.5">Choose what component is connected to the VNA test port to study its RF fingerprint:</p>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-                    <button onclick="selectDUT('matched')" id="dut-matched" title="50Ω Matched Load: Absorbs all RF power. Simulates an ideal termination." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-semibold text-xs text-white flex items-center justify-between">
-                            <span>50Ω Matched Load</span>
-                            <span class="text-[10px] bg-slate-700 px-1 rounded text-slate-300">Ideal</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Flat low return loss (&lt;-30dB), VSWR ~1.0</div>
-                    </button>
-                    <button onclick="selectDUT('open')" id="dut-open" title="Open Circuit: Unterminated port. 100% reflection in-phase (Γ = +1)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-semibold text-xs text-white flex items-center justify-between">
-                            <span>Open Circuit</span>
-                            <span class="text-[10px] bg-slate-700 px-1 rounded text-slate-300">Γ = +1</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Total reflection, 0° phase at boundary</div>
-                    </button>
-                    <button onclick="selectDUT('short')" id="dut-short" title="Short Circuit: Grounded port. 100% reflection with 180° phase inversion (Γ = -1)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-semibold text-xs text-white flex items-center justify-between">
-                            <span>Short Circuit</span>
-                            <span class="text-[10px] bg-slate-700 px-1 rounded text-slate-300">Γ = -1</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Total reflection, 180° phase inversion</div>
-                    </button>
-                    <button onclick="selectDUT('filter')" id="dut-filter" title="Low-Pass Filter: Passes signals < 1.5 GHz and reflects higher frequencies." class="p-2.5 rounded text-left border border-blue-500/50 bg-blue-950/30 hover:bg-blue-900/40 transition">
-                        <div class="font-semibold text-xs text-blue-300 flex items-center justify-between">
-                            <span>Low-Pass Filter</span>
-                            <span class="text-[10px] bg-blue-900/60 px-1 rounded text-blue-200">Cutoff 1.5 GHz</span>
-                        </div>
-                        <div class="text-[11px] text-blue-400/80 mt-0.5">Reflects signals above cutoff frequency</div>
-                    </button>
-                    <button onclick="selectDUT('antenna')" id="dut-antenna" title="Resonant Antenna: Tuned to radiate efficiently at 2.4 GHz (Wi-Fi/Bluetooth band)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-semibold text-xs text-white flex items-center justify-between">
-                            <span>Resonant Antenna</span>
-                            <span class="text-[10px] bg-slate-700 px-1 rounded text-slate-300">2.4 GHz</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Deep return loss dip at resonance frequency</div>
-                    </button>
-                    <button onclick="selectDUT('mismatch')" id="dut-mismatch" title="75Ω Mismatched Load: Standard mismatch in 50Ω system (~-14 dB return loss)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-semibold text-xs text-white flex items-center justify-between">
-                            <span>Mismatched Load (75Ω)</span>
-                            <span class="text-[10px] bg-slate-700 px-1 rounded text-slate-300">Constant</span>
-                        </div>
-                        <div class="text-[11px] text-slate-400 mt-0.5">Creates constant moderate return loss</div>
-                    </button>
-                </div>
-
-                <!-- Calibration Controls with Tooltips -->
-                <div class="border-t border-slate-700/60 pt-3 flex items-center justify-between">
-                    <div>
-                        <div class="text-xs text-slate-300 font-medium" title="Calibration removes cable insertion loss and directivity errors">VNA Calibration (SOL):</div>
-                        <div class="text-[10px] text-slate-400">Applies mathematical Short-Open-Load error correction</div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="performCalibration()" id="calBtn" title="Simulates attaching Short, Open, and Load standards to mathematically calibrate out test-cable imperfections." class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-xs font-bold rounded text-white transition shadow">
-                            Perform SOL Cal
-                        </button>
-                        <button onclick="resetCalibration()" title="Clears calibration state, restoring raw test-cable ripple and measurement noise." class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs rounded text-slate-300 transition">
-                            Reset
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- VNA Stimulus & Sweep Parameters -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg">
-                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 mb-1" title="Configure VNA RF Signal Generator sweep parameters">2. Stimulus & Frequency Sweep</h2>
-                <p class="text-xs text-slate-400 mb-3">Adjust sweep range and frequency distribution mode:</p>
-                
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1" title="Minimum frequency of the sweep scan">Start Frequency (MHz)</label>
-                        <input type="number" id="startFreqInput" value="1" min="0.1" max="2900" step="10" onchange="updateStimulus()" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs mono text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1" title="Maximum frequency of the sweep scan">Stop Frequency (MHz)</label>
-                        <input type="number" id="stopFreqInput" value="3000" min="10" max="3000" step="50" onchange="updateStimulus()" class="w-full bg-slate-900 border border-slate-700 rounded px-3 py-1.5 text-xs mono text-white focus:outline-none focus:border-blue-500">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between mb-3 bg-slate-900/50 p-2.5 rounded border border-slate-800">
-                    <div>
-                        <div class="text-xs text-slate-200 font-medium" title="Linear vs Logarithmic frequency spacing">Sweep Type Mode</div>
-                        <div class="text-[10px] text-slate-400">Logarithmic spacing is great for wideband filters</div>
-                    </div>
-                    <div class="flex gap-1.5">
+            <!-- Stimulus & Frequency Range Panel -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">1. Stimulus Frequency Sweep</h2>
+                    <div class="flex items-center gap-1 bg-slate-900 p-0.5 rounded border border-slate-700">
                         <button onclick="setSweepType('linear')" id="btnSweepLinear" class="px-2.5 py-1 text-xs font-semibold rounded bg-blue-600 text-white transition">Linear</button>
-                        <button onclick="setSweepType('log')" id="btnSweepLog" class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Log</button>
+                        <button onclick="setSweepType('log')" id="btnSweepLog" class="px-2.5 py-1 text-xs font-semibold rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Logarithmic</button>
                     </div>
                 </div>
 
-                <div>
-                    <div class="flex justify-between text-xs text-slate-400 mb-1">
-                        <span title="Move marker across frequency sweep points">Marker Frequency Control Slider</span>
-                        <span id="markerSliderVal" class="mono text-blue-400 font-semibold">1.50 GHz</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Start Frequency (MHz)</label>
+                        <input type="number" id="startFreqInput" value="1.0" min="0.1" max="5000" step="1" onchange="updateStimulus()" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs mono text-white focus:outline-none focus:border-blue-500">
                     </div>
-                    <input type="range" id="markerSlider" min="0" max="1000" value="500" oninput="onMarkerSliderMove(this.value)" title="Drag slider to sweep Marker M1 across the frequency range" class="w-full accent-blue-500 cursor-pointer">
+                    <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">Stop Frequency (MHz)</label>
+                        <input type="number" id="stopFreqInput" value="3000.0" min="1.0" max="6000" step="10" onchange="updateStimulus()" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs mono text-white focus:outline-none focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- Marker Slider -->
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400">Marker Position (M1)</span>
+                        <span id="markerSliderVal" class="mono font-bold text-emerald-400">1.500 GHz</span>
+                    </div>
+                    <input type="range" id="markerSlider" min="0" max="1000" step="1" value="500" oninput="onMarkerSliderMove(this.value)" class="w-full accent-emerald-500 cursor-pointer">
                 </div>
             </div>
 
-            <!-- Educational Rubber Duck Companion Panel -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg flex-1 flex flex-col">
-                <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                        RF Tutor & Concept Explainer
-                    </h2>
-                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Interactive Lessons</span>
+            <!-- Device Under Test (DUT) Selector -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200 mb-2.5">2. Select Device Under Test (DUT)</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <button onclick="selectDUT('matched')" id="dut-matched" title="50 Ohm Matched Load: Absorbs all RF energy with minimal reflection." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+                        <div class="font-bold text-xs text-white">50Ω Match</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Terminated load</div>
+                    </button>
+                    <button onclick="selectDUT('open')" id="dut-open" title="Open Circuit: High impedance, reflects all power in-phase (Γ = +1)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+                        <div class="font-bold text-xs text-white">Open Circuit</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Unterminated port</div>
+                    </button>
+                    <button onclick="selectDUT('short')" id="dut-short" title="Short Circuit: Grounds signal, reflects all power with 180° phase inversion (Γ = -1)." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+                        <div class="font-bold text-xs text-white">Short Circuit</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Grounded port</div>
+                    </button>
+                    <button onclick="selectDUT('filter')" id="dut-filter" title="Low-Pass Filter: Butterworth filter passing frequencies below 1.5 GHz." class="p-2.5 rounded text-left border border-blue-500/50 bg-blue-950/30 hover:bg-blue-900/40 transition shadow">
+                        <div class="font-bold text-xs text-blue-300">Low-Pass Filter</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Cutoff @ 1.5 GHz</div>
+                    </button>
+                    <button onclick="selectDUT('antenna')" id="dut-antenna" title="Resonant Antenna: Dipole antenna tuned for resonance at 2.4 GHz." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+                        <div class="font-bold text-xs text-white">Antenna (2.4G)</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Resonant dip</div>
+                    </button>
+                    <button onclick="selectDUT('mismatch')" id="dut-mismatch" title="75 Ohm Mismatch: Constant reflection in a 50 Ohm system." class="p-2.5 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
+                        <div class="font-bold text-xs text-white">75Ω Mismatch</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5">Constant VSWR ~1.5</div>
+                    </button>
                 </div>
-                <div id="tutorContent" class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded border border-slate-800 flex-1">
-                    <p class="font-semibold text-white mb-1">💡 What is S11 / Return Loss?</p>
-                    <p id="tutorText">S11 represents the reflection coefficient (Input Return Loss). It measures how much radio frequency power is reflected back from the device. A value of -20 dB means only 1% of the power is reflected (great match), while 0 dB means 100% reflection (total mismatch or open/short).</p>
+            </div>
+
+            <!-- Educational Companion Panel -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Self-Tutor RF Laboratory Companion
+                        </h3>
+                        <span onclick="openLearningHubModal()" class="text-[10px] text-emerald-400 cursor-pointer hover:underline">Open Full Hub →</span>
+                    </div>
+                    <div id="tutorText" class="text-xs text-slate-300 leading-relaxed bg-slate-900/70 p-2.5 rounded border border-slate-800 space-y-2">
+                        <strong>Low-Pass Filter:</strong> Passes signals below 1.5 GHz smoothly (S21 ~0 dB), while reflecting and blocking frequencies above cutoff.
+                    </div>
+                </div>
+                <div class="mt-3 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800 pt-2">
+                    <span>Interactive Self-Tutor v3.0</span>
+                    <div class="flex gap-3">
+                        <button onclick="explainPhaseConcept()" class="text-sky-400 hover:underline">Explain Phase (°)</button>
+                        <button onclick="openQuickQuizModal()" class="text-emerald-400 hover:underline font-semibold">Test Knowledge 📝</button>
+                    </div>
                 </div>
             </div>
 
@@ -297,40 +280,29 @@
 
     </main>
 
-    <!-- LC Smith Tuner & Matching Lab View -->
+    <!-- Main Instrument Body (LC Smith Tuner Lab View) -->
     <main id="tunerMainView" class="hidden flex-1 p-3 md:p-4 grid grid-cols-1 lg:grid-cols-12 gap-4 max-w-[1700px] mx-auto w-full">
         
-        <!-- Left Column: Interactive Immittance Smith Chart & Live Schematic (7 cols) -->
+        <!-- Left Column: Smith Chart Screen & Schematic (7 cols) -->
         <section class="lg:col-span-7 flex flex-col gap-3">
-            <!-- Screen Bezel -->
             <div class="bg-slate-950 p-3 rounded-xl border-4 border-slate-800 shadow-2xl relative flex flex-col">
-                
-                <!-- Top HUD -->
-                <div class="flex flex-wrap justify-between items-center text-xs mono text-slate-400 mb-2 px-1 gap-2">
-                    <div class="flex items-center gap-2">
-                        <span class="text-emerald-400 font-bold">LC MATCHING LAB</span>
-                        <span id="tunerHudTopology" class="bg-slate-900 px-2 py-0.5 rounded text-slate-300 border border-slate-800">L-Net Low-Pass (Series L + Shunt C)</span>
-                    </div>
-                    <div class="flex items-center gap-3">
-                        <span id="tunerHudFreq" class="text-sky-400 font-semibold">f₀ = 433.0 MHz</span>
-                        <span class="text-blue-400">Z₀ = 50Ω</span>
-                    </div>
+                <div class="flex justify-between items-center text-xs mono text-slate-400 mb-2 px-1">
+                    <span id="tunerHudTopology" class="text-emerald-400 font-bold">L-Net Low-Pass (Series L + Shunt C)</span>
+                    <span id="tunerHudFreq" class="text-sky-400">f₀ = 2450.0 MHz</span>
                 </div>
-
-                <!-- Smith Chart Canvas Container -->
-                <div class="relative w-full aspect-[16/11] bg-labscreen rounded border border-slate-900 overflow-hidden shadow-inner">
-                    <canvas id="tunerSmithCanvas" class="w-full h-full block"></canvas>
-                    <div class="absolute inset-0 scanlines pointer-events-none opacity-30"></div>
+                <div class="relative w-full aspect-[16/10] bg-labscreen rounded border border-slate-900 overflow-hidden shadow-inner">
+                    <canvas id="tunerSmithCanvas" class="w-full h-full block" title="Smith Chart matching plane showing trajectory from Z_L to 50Ω"></canvas>
+                    <div class="absolute inset-0 scanlines pointer-events-none opacity-40"></div>
 
                     <!-- Top-Left Impedance & S11 Telemetry Box -->
                     <div class="absolute top-2 left-2 bg-black/85 backdrop-blur border border-slate-800 rounded p-2.5 text-xs mono pointer-events-none shadow-lg space-y-1">
                         <div class="flex items-center gap-2 text-[11px] font-bold text-amber-400">
                             <span class="w-2.5 h-2.5 rounded-full bg-amber-400 inline-block"></span>
-                            <span>Z_L (Sarcină): <span id="readoutZL" class="text-white">15.0 - j45.0 Ω</span></span>
+                            <span>Z_L (Load): <span id="readoutZL" class="text-white">15.0 - j45.0 Ω</span></span>
                         </div>
                         <div class="flex items-center gap-2 text-[11px] font-bold text-emerald-400">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 inline-block"></span>
-                            <span>Z_in (Intrare): <span id="readoutZin" class="text-white">50.0 + j0.0 Ω</span></span>
+                            <span>Z_in (Input): <span id="readoutZin" class="text-white">50.0 + j0.0 Ω</span></span>
                         </div>
                         <div class="text-[11px] text-slate-300 pl-4">
                             Y_in: <span id="readoutYin" class="text-sky-300">20.0 + j0.0 mS</span>
@@ -347,15 +319,15 @@
                     <div class="absolute top-2 right-2 bg-black/85 backdrop-blur border border-slate-800 rounded p-2 text-[11px] mono space-y-1.5 shadow-lg">
                         <label class="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white">
                             <input type="checkbox" id="toggleAdmittance" checked onchange="updateTuner()" class="accent-purple-500 rounded cursor-pointer">
-                            <span class="text-purple-300">Cercuri Admitanță (G/B)</span>
+                            <span class="text-purple-300">Admittance Circles (G/B)</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer text-slate-200 hover:text-white">
                             <input type="checkbox" id="toggleFreqSweepGhost" checked onchange="updateTuner()" class="accent-sky-500 rounded cursor-pointer">
-                            <span class="text-sky-300">Curbă Bandă (±20% f₀)</span>
+                            <span class="text-sky-300">Band Sweep (±20% f₀)</span>
                         </label>
                         <div class="border-t border-slate-800 pt-1 space-y-0.5 text-[10px] text-slate-400">
-                            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-rose-500 inline-block"></span> Element 1 (Serie/Prim)</div>
-                            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-cyan-400 inline-block"></span> Element 2 (Paralel/Secund)</div>
+                            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-rose-500 inline-block"></span> Stage 1 (Load Side)</div>
+                            <div class="flex items-center gap-1.5"><span class="w-3 h-0.5 bg-cyan-400 inline-block"></span> Stage 2 (Source Side)</div>
                         </div>
                     </div>
                 </div>
@@ -363,8 +335,8 @@
                 <!-- Dynamic Circuit Schematic Strip -->
                 <div class="mt-2.5 bg-slate-900/90 border border-slate-800 rounded-lg p-2.5">
                     <div class="flex items-center justify-between text-[11px] mono text-slate-400 mb-1 px-1">
-                        <span>SCHEMA CIRCUITULUI DE ADAPTARE (PORT 1 → SARCINĂ)</span>
-                        <span id="schematicQualityBadge" class="text-emerald-400">Componente Ideale (Q = ∞)</span>
+                        <span>IMPEDANCE MATCHING NETWORK SCHEMATIC (PORT 1 → LOAD)</span>
+                        <span id="schematicQualityBadge" class="text-emerald-400">Ideal Components (Q = ∞)</span>
                     </div>
                     <div id="tunerSchematicContainer" class="w-full h-24 flex items-center justify-center">
                         <!-- Dynamic SVG injected by JS -->
@@ -372,57 +344,80 @@
                 </div>
             </div>
 
-            <!-- Interactive Romanian RF Tutor Explanation Card -->
+            <!-- Live Step-by-Step Formula & Math Derivation Panel -->
             <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg">
-                <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center justify-between mb-2">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                        Ghid Interactiv Smith Chart & Reguli de Mișcare
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        Step-by-Step RF Matching Equations & Live Calculations
                     </h3>
-                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Live Feedback</span>
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Live Equations</span>
+                </div>
+                <div id="tunerLiveEquations" class="grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] mono bg-slate-950/85 p-2.5 rounded border border-slate-800 text-slate-300 mb-2.5">
+                    <!-- Populated dynamically by updateTuner() -->
                 </div>
                 <div id="tunerTutorText" class="text-xs text-slate-300 leading-relaxed bg-slate-900/70 p-2.5 rounded border border-slate-800">
-                    Modifică valorile <strong>L</strong> și <strong>C</strong> pentru a aduce punctul verde <strong>Z_in</strong> exact în centrul diagramei (<strong>50 + j0 Ω</strong>).
+                    Adjust <strong>L</strong> and <strong>C</strong> to move the bright green input point <strong>Z_in</strong> into the center of the Smith Chart (<strong>50 + j0 Ω</strong>).
                 </div>
             </div>
         </section>
 
-        <!-- Right Column: Topology, Load & LC Tuning Controls (5 cols) -->
-        <section class="lg:col-span-5 flex flex-col gap-3.5">
+        <!-- Right Column: Lab Exercises & Controls (5 cols) -->
+        <section class="lg:col-span-5 flex flex-col gap-3">
             
-            <!-- 1. Topology & Quality Selector -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg">
+            <!-- Guided Lab Exercises Panel -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg">
                 <div class="flex items-center justify-between mb-2">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">1. Topologie Circuit LC</h2>
-                    <button onclick="autoMatchCurrentLoad()" title="Calculează automat valorile L și C pentru adaptare perfectă la frecvența f₀" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded shadow transition flex items-center gap-1">
-                        <span>✨ Auto-Match la 50Ω</span>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        Guided Student Lab Exercises
+                    </h2>
+                    <span id="labChallengeBadge" class="text-[10px] bg-emerald-950 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">Free Practice</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button onclick="loadLabExercise(1)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-200 transition">Lab 1: 2.45 GHz Patch</button>
+                    <button onclick="loadLabExercise(2)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-200 transition">Lab 2: 433 MHz LoRa</button>
+                    <button onclick="loadLabExercise(3)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-200 transition">Lab 3: SMD ESR Q Loss</button>
+                    <button onclick="loadLabExercise(4)" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-200 transition">Lab 4: Series vs Shunt</button>
+                </div>
+                <div id="labExercisePrompt" class="text-[11px] text-slate-300 bg-slate-900/75 p-2 rounded border border-slate-800 leading-relaxed">
+                    Select a guided lab exercise above or freely explore how L and C move impedance along constant-R and constant-G circles.
+                </div>
+            </div>
+
+            <!-- 1. Topology & Quality Selector -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">1. Matching Network Topology</h2>
+                    <button onclick="autoMatchCurrentLoad()" title="Automatically computes optimal L and C values for a 50 Ohm match at f0" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded shadow transition flex items-center gap-1">
+                        <span>✨ Auto-Match to 50Ω</span>
                     </button>
                 </div>
 
-                <div class="grid grid-cols-2 gap-2 mb-3">
+                <div class="grid grid-cols-2 gap-2 mb-2.5">
                     <button onclick="setTunerTopology('l_lp')" id="topo-l_lp" class="p-2 rounded text-left border border-blue-500/60 bg-blue-950/40 transition">
                         <div class="font-bold text-xs text-blue-300">L-Net Low-Pass</div>
-                        <div class="text-[10px] text-slate-400">L în serie + C în paralel</div>
+                        <div class="text-[10px] text-slate-400">Series L + Shunt C</div>
                     </button>
                     <button onclick="setTunerTopology('l_hp')" id="topo-l_hp" class="p-2 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
                         <div class="font-bold text-xs text-white">L-Net High-Pass</div>
-                        <div class="text-[10px] text-slate-400">C în serie + L în paralel</div>
+                        <div class="text-[10px] text-slate-400">Series C + Shunt L</div>
                     </button>
                     <button onclick="setTunerTopology('series_rlc')" id="topo-series_rlc" class="p-2 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-bold text-xs text-white">Serie Pur (Z_L + L + C)</div>
-                        <div class="text-[10px] text-slate-400">Merge doar pe cercuri R</div>
+                        <div class="font-bold text-xs text-white">Pure Series (Z_L + L + C)</div>
+                        <div class="text-[10px] text-slate-400">Moves on constant-R circles</div>
                     </button>
                     <button onclick="setTunerTopology('parallel_rlc')" id="topo-parallel_rlc" class="p-2 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition">
-                        <div class="font-bold text-xs text-white">Paralel Pur (Z_L || L || C)</div>
-                        <div class="text-[10px] text-slate-400">Merge doar pe cercuri G</div>
+                        <div class="font-bold text-xs text-white">Pure Shunt (Z_L || L || C)</div>
+                        <div class="text-[10px] text-slate-400">Moves on constant-G circles</div>
                     </button>
                 </div>
 
                 <!-- Ideal vs Real Parasitics Toggle -->
                 <div class="flex items-center justify-between bg-slate-900/60 p-2 rounded border border-slate-800">
                     <div>
-                        <div class="text-xs font-semibold text-slate-200">Calitate Componente (Factor Q)</div>
-                        <div class="text-[10px] text-slate-400">Real SMD adaugă pierderi ESR (Q_L=45, Q_C=200)</div>
+                        <div class="text-xs font-semibold text-slate-200">Component Quality Factor (Q)</div>
+                        <div class="text-[10px] text-slate-400">Real SMD adds ESR loss (Q_L=45, Q_C=200)</div>
                     </div>
                     <div class="flex gap-1">
                         <button onclick="setComponentQuality(true)" id="btnQualIdeal" class="px-2.5 py-1 text-[11px] font-bold rounded bg-blue-600 text-white transition">Ideal (Q=∞)</button>
@@ -432,97 +427,103 @@
             </div>
 
             <!-- 2. Target Frequency & Load Impedance (Z_L) -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg space-y-3">
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg space-y-2.5">
                 <div class="flex items-center justify-between">
-                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">2. Frecvență (f₀) & Sarcină (Z_L)</h2>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">2. Frequency (f₀) & Load (Z_L)</h2>
                     <div class="flex gap-1">
-                        <button onclick="applyLoadPreset(15, -45)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-amber-300" title="Antenă scurtă capacitivă">Antenă 15-j45</button>
-                        <button onclick="applyLoadPreset(120, 35)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-sky-300" title="Intrare amplificator LNA">LNA 120+j35</button>
-                        <button onclick="applyLoadPreset(75, 0)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-slate-300" title="Cablu TV 75 Ohm">75Ω</button>
+                        <button onclick="applyLoadPreset(22, -38)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-amber-300" title="2.45 GHz Wi-Fi Patch Antenna">Patch 22-j38</button>
+                        <button onclick="applyLoadPreset(15, -45)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-sky-300" title="Short Whip Antenna">Whip 15-j45</button>
+                        <button onclick="applyLoadPreset(75, 0)" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-slate-300" title="75 Ohm Coaxial Load">75Ω</button>
                     </div>
                 </div>
 
                 <!-- Frequency f0 Slider -->
                 <div>
                     <div class="flex justify-between text-xs mb-1">
-                        <span class="text-slate-400">Frecvență de lucru (f₀)</span>
-                        <span id="valTunerFreq" class="mono font-bold text-sky-400">433.0 MHz</span>
+                        <span class="text-slate-400">Operating Frequency (f₀)</span>
+                        <span id="valTunerFreq" class="mono font-bold text-sky-400">2450.0 MHz</span>
                     </div>
-                    <input type="range" id="sliderTunerFreq" min="10" max="2500" step="1" value="433" oninput="updateTuner()" class="w-full accent-sky-500 cursor-pointer">
+                    <input type="range" id="sliderTunerFreq" min="10" max="6000" step="5" value="2450" oninput="onTunerFreqChange()" class="w-full accent-sky-500 cursor-pointer">
                 </div>
 
                 <!-- Load Resistance R_L Slider -->
                 <div>
                     <div class="flex justify-between text-xs mb-1">
-                        <span class="text-slate-400">Rezistență Sarcină (R_L)</span>
-                        <span id="valTunerRL" class="mono font-bold text-amber-400">15.0 Ω</span>
+                        <span class="text-slate-400">Load Resistance (R_L)</span>
+                        <span id="valTunerRL" class="mono font-bold text-amber-400">22.0 Ω</span>
                     </div>
-                    <input type="range" id="sliderTunerRL" min="5" max="250" step="1" value="15" oninput="updateTuner()" class="w-full accent-amber-500 cursor-pointer">
+                    <input type="range" id="sliderTunerRL" min="5" max="250" step="1" value="22" oninput="updateTuner()" class="w-full accent-amber-500 cursor-pointer">
                 </div>
 
                 <!-- Load Reactance X_L Slider -->
                 <div>
                     <div class="flex justify-between text-xs mb-1">
-                        <span class="text-slate-400">Reactanță Sarcină (X_L)</span>
-                        <span id="valTunerXL" class="mono font-bold text-amber-400">-45.0 Ω</span>
+                        <span class="text-slate-400">Load Reactance (X_L)</span>
+                        <span id="valTunerXL" class="mono font-bold text-amber-400">-38.0 Ω</span>
                     </div>
-                    <input type="range" id="sliderTunerXL" min="-200" max="200" step="1" value="-45" oninput="updateTuner()" class="w-full accent-amber-500 cursor-pointer">
+                    <input type="range" id="sliderTunerXL" min="-200" max="200" step="1" value="-38" oninput="updateTuner()" class="w-full accent-amber-500 cursor-pointer">
                 </div>
             </div>
 
-            <!-- 3. LC Tuning Knobs / Sliders -->
-            <div class="bg-labpanel p-4 rounded-xl border border-slate-700/60 shadow-lg space-y-3 flex-1">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">3. Acordare Componente LC</h2>
+            <!-- 3. LC Tuning Knobs / Sliders with Band Range Switcher -->
+            <div class="bg-labpanel p-3.5 rounded-xl border border-slate-700/60 shadow-lg space-y-2.5 flex-1">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">3. LC Component Tuning</h2>
+                    <div class="flex items-center gap-1 bg-slate-900 p-0.5 rounded border border-slate-700">
+                        <button onclick="setTunerRangeMode('ghz')" id="btnRangeGHz" class="px-2 py-0.5 text-[10px] font-bold rounded bg-sky-600 text-white transition" title="High-frequency fine resolution: 0.05 nH / 0.05 pF steps">GHz Fine</button>
+                        <button onclick="setTunerRangeMode('subghz')" id="btnRangeSubGHz" class="px-2 py-0.5 text-[10px] font-bold rounded text-slate-300 hover:text-white transition" title="Wide range for VHF/UHF: up to 300 nH / 200 pF">Sub-GHz Wide</button>
+                    </div>
+                </div>
 
                 <!-- Inductance L Control -->
-                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 space-y-2">
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
-                            Inductanță (L)
-                            <span id="reactanceLBadge" class="text-[10px] mono font-normal text-slate-400">(X_L = +68.0 Ω)</span>
+                            Inductance (L)
+                            <span id="reactanceLBadge" class="text-[10px] mono font-normal text-slate-300">(X_L = +68.0 Ω)</span>
                         </span>
                         <div class="flex items-center gap-2">
-                            <span id="valTunerL" class="mono text-xs font-bold text-white">25.0 nH</span>
+                            <span id="valTunerL" class="mono text-xs font-bold text-white">4.50 nH</span>
                             <label class="flex items-center gap-1 text-[10px] text-slate-400 cursor-pointer bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
                                 <input type="checkbox" id="bypassL" onchange="updateTuner()" class="accent-rose-500">
                                 Bypass
                             </label>
                         </div>
                     </div>
-                    <input type="range" id="sliderTunerL" min="0.5" max="300" step="0.5" value="25.0" oninput="updateTuner()" class="w-full accent-rose-500 cursor-pointer">
+                    <input type="range" id="sliderTunerL" min="0.05" max="25" step="0.05" value="4.50" oninput="updateTuner()" class="w-full accent-rose-500 cursor-pointer">
                     <div class="flex justify-between text-[10px] text-slate-500 mono">
-                        <span>0.5 nH</span>
+                        <span id="minLabelL">0.05 nH</span>
                         <div class="flex gap-2">
-                            <button onclick="nudgeTunerParam('sliderTunerL', -0.5)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">-0.5</button>
-                            <button onclick="nudgeTunerParam('sliderTunerL', 0.5)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">+0.5</button>
+                            <button onclick="nudgeTunerParam('sliderTunerL', -1)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">-Step</button>
+                            <button onclick="nudgeTunerParam('sliderTunerL', 1)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">+Step</button>
                         </div>
-                        <span>300 nH</span>
+                        <span id="maxLabelL">25.0 nH</span>
                     </div>
                 </div>
 
                 <!-- Capacitance C Control -->
-                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800 space-y-2">
+                <div class="bg-slate-900/60 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
-                            Capacitate (C)
-                            <span id="reactanceCBadge" class="text-[10px] mono font-normal text-slate-400">(X_C = -36.7 Ω)</span>
+                            Capacitance (C)
+                            <span id="reactanceCBadge" class="text-[10px] mono font-normal text-slate-300">(X_C = -36.7 Ω)</span>
                         </span>
                         <div class="flex items-center gap-2">
-                            <span id="valTunerC" class="mono text-xs font-bold text-white">10.0 pF</span>
+                            <span id="valTunerC" class="mono text-xs font-bold text-white">1.45 pF</span>
                             <label class="flex items-center gap-1 text-[10px] text-slate-400 cursor-pointer bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">
                                 <input type="checkbox" id="bypassC" onchange="updateTuner()" class="accent-cyan-500">
                                 Bypass
                             </label>
                         </div>
                     </div>
-                    <input type="range" id="sliderTunerC" min="0.5" max="200" step="0.5" value="10.0" oninput="updateTuner()" class="w-full accent-cyan-500 cursor-pointer">
+                    <input type="range" id="sliderTunerC" min="0.05" max="20" step="0.05" value="1.45" oninput="updateTuner()" class="w-full accent-cyan-500 cursor-pointer">
                     <div class="flex justify-between text-[10px] text-slate-500 mono">
-                        <span>0.5 pF</span>
+                        <span id="minLabelC">0.05 pF</span>
                         <div class="flex gap-2">
-                            <button onclick="nudgeTunerParam('sliderTunerC', -0.5)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">-0.5</button>
-                            <button onclick="nudgeTunerParam('sliderTunerC', 0.5)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">+0.5</button>
+                            <button onclick="nudgeTunerParam('sliderTunerC', -1)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">-Step</button>
+                            <button onclick="nudgeTunerParam('sliderTunerC', 1)" class="px-1.5 bg-slate-800 hover:bg-slate-700 rounded text-slate-300">+Step</button>
                         </div>
-                        <span>200 pF</span>
+                        <span id="maxLabelC">20.0 pF</span>
                     </div>
                 </div>
             </div>
@@ -542,25 +543,21 @@
             <div class="space-y-4 text-xs text-slate-300 leading-relaxed">
                 <div>
                     <h4 class="font-bold text-white mb-1 text-sm text-blue-400">1. What is a Vector Network Analyzer (VNA)?</h4>
-                    <p>A VNA is an instrument used to test RF components. It injects a swept radio frequency signal into a Device Under Test (DUT) and measures both the magnitude and phase of the reflected (S11) or transmitted (S21) waves.</p>
+                    <p>A VNA is an instrument used to test RF components. It injects a swept radio frequency signal into a Device Under Test (DUT) and measures both magnitude and phase of reflected (S11) or transmitted (S21) waves.</p>
                 </div>
                 <div>
                     <h4 class="font-bold text-white mb-1 text-sm text-blue-400">2. Reference Guide to Interface Buttons</h4>
                     <ul class="list-disc pl-5 space-y-1.5 text-slate-400">
-                        <li><strong class="text-slate-200">Log Mag Button:</strong> Displays return loss in decibels (dB). Allows engineers to easily see impedance match quality across a wide dynamic range (e.g., -10dB to -50dB).</li>
-                        <li><strong class="text-slate-200">Smith Chart Button:</strong> A graphical polar plot representing complex impedance ($R + jX$). The center point is a perfect 50Ω match. Moving right is inductive, moving left is capacitive.</li>
-                        <li><strong class="text-slate-200">Phase Button:</strong> Shows the phase angle of the reflected wave in degrees. Useful for measuring electrical delay and cable length.</li>
-                        <li><strong class="text-slate-200">VSWR Button:</strong> Voltage Standing Wave Ratio. Expresses the ratio of maximum to minimum voltage standing wave amplitude. A VSWR of 1.0 is ideal.</li>
-                        <li><strong class="text-slate-200">Perform SOL Cal:</strong> Simulates Short-Open-Load calibration standards to remove systematic cable errors and measurement noise.</li>
+                        <li><strong class="text-slate-200">Log Mag Button:</strong> Displays return loss in decibels (dB).</li>
+                        <li><strong class="text-slate-200">Smith Chart Button:</strong> Polar plot combining resistance and reactance. Center is 50Ω.</li>
+                        <li><strong class="text-slate-200">Phase Button:</strong> Measures reflection phase shift angle in degrees (°).</li>
+                        <li><strong class="text-slate-200">VSWR Button:</strong> Voltage Standing Wave Ratio. Ideal is 1.0.</li>
+                        <li><strong class="text-slate-200">Perform SOL Cal:</strong> Simulates Short-Open-Load calibration standards.</li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="font-bold text-white mb-1 text-sm text-blue-400">3. Understanding DUT Behaviors</h4>
-                    <p>When you click different DUTs, notice how the trace shifts: <strong>Matched Load</strong> gives a flat low curve; <strong>Open/Short</strong> bounce up to 0 dB reflection; <strong>Filters</strong> show sharp frequency cutoffs; and <strong>Antennas</strong> display resonant impedance dips.</p>
-                </div>
-                <div>
-                    <h4 class="font-bold text-white mb-1 text-sm text-blue-400">4. Importing Touchstone (.s1p) Files</h4>
-                    <p>You can click the <strong>Import .s1p</strong> button in the top header to load real-world 1-port Touchstone files. The VNA will automatically parse the frequency and complex reflection data ($S_{11}$ Real/Imaginary or Magnitude/Angle) and render it on your screen!</p>
+                    <h4 class="font-bold text-white mb-1 text-sm text-blue-400">3. Touchstone Export & Import (.s1p)</h4>
+                    <p>Export simulated 1-port measurements in standard Touchstone format or import external .s1p files to test real-world RF data directly in your browser.</p>
                 </div>
             </div>
             <div class="mt-6 flex justify-end">
@@ -569,16 +566,88 @@
         </div>
     </div>
 
+    <!-- Interactive Learning Hub Modal (Self-Tutor & Guided Modules) -->
+    <div id="learningHubModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-labpanel border border-slate-700 rounded-xl max-w-4xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto flex flex-col gap-4">
+            <button onclick="closeLearningHubModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                    Interactive RF Self-Tutor & Guided Learning Hub
+                </h3>
+                <span class="text-xs text-slate-400">Mastering Vector Network Analysis</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div onclick="selectHubModule(1)" id="hubMod1" class="p-3 rounded-lg border border-emerald-500 bg-emerald-950/40 cursor-pointer transition">
+                    <div class="font-bold text-xs text-emerald-300 mb-1">Module 1: S-Parameters & Return Loss</div>
+                    <div class="text-[11px] text-slate-300">Understand S11, S21, decibels, and why we measure reflection.</div>
+                </div>
+                <div onclick="selectHubModule(2)" id="hubMod2" class="p-3 rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 cursor-pointer transition">
+                    <div class="font-bold text-xs text-white mb-1">Module 2: Calibration (SOL)</div>
+                    <div class="text-[11px] text-slate-300">Why Short-Open-Load calibration removes systematic cable errors.</div>
+                </div>
+                <div onclick="selectHubModule(3)" id="hubMod3" class="p-3 rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 cursor-pointer transition">
+                    <div class="font-bold text-xs text-white mb-1">Module 3: Smith Chart Geometry</div>
+                    <div class="text-[11px] text-slate-300">Reading complex impedance, normalized R/X circles, and VSWR.</div>
+                </div>
+            </div>
+
+            <div id="hubModuleContent" class="bg-slate-950 p-4 rounded-lg border border-slate-800 text-xs text-slate-300 leading-relaxed space-y-3">
+                <h4 class="font-bold text-sm text-emerald-400">Module 1: Understanding S-Parameters and Return Loss (dB)</h4>
+                <p>An <strong>S-parameter (Scattering parameter)</strong> describes how RF energy propagates through a multi-port network. For a 1-port reflection measurement:</p>
+                <ul class="list-disc pl-5 space-y-1 text-slate-300">
+                    <li><strong>S11</strong> represents the power reflected from Port 1 back into Port 1.</li>
+                    <li><strong>Return Loss (RL):</strong> Defined as $\text{RL} = -20\log_{10}|\Gamma|$. Higher positive dB values (e.g., $30\text{ dB}$) mean very little reflection and an excellent 50Ω match.</li>
+                    <li><strong>VSWR (Voltage Standing Wave Ratio):</strong> The ratio of maximum to minimum voltage standing wave amplitudes. An ideal match gives $\text{VSWR} = 1.0$.</li>
+                </ul>
+                <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-sky-300">
+                    💡 <strong>Try this:</strong> Select the <strong>50Ω Match</strong> DUT on the main screen, then switch to <strong>Low-Pass Filter</strong> and inspect how S11 spikes above 1.5 GHz!
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                <button onclick="openQuickQuizModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold rounded text-white transition">Take Self-Test Quiz 📝</button>
+                <button onclick="closeLearningHubModal()" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded text-white transition">Close Hub</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Self-Test Quiz Modal -->
+    <div id="quickQuizModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-labpanel border border-slate-700 rounded-xl max-w-xl w-full p-6 shadow-2xl relative space-y-4">
+            <button onclick="closeQuickQuizModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                RF Self-Test Knowledge Quiz
+            </h3>
+            <div id="quizQuestionBox" class="text-xs text-slate-200 bg-slate-950 p-3.5 rounded border border-slate-800 space-y-3">
+                <div id="quizQTitle" class="font-bold text-sky-400 text-sm">Question 1 of 3</div>
+                <div id="quizQText" class="text-slate-200">If a device under test has a Return Loss (S11) of -20 dB, what percentage of incident power is reflected back?</div>
+                <div id="quizOptions" class="space-y-2 pt-2">
+                    <button onclick="checkQuizAnswer(0)" class="w-full text-left p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs transition">A) 50% (Reflection coefficient 0.5)</button>
+                    <button onclick="checkQuizAnswer(1)" class="w-full text-left p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs transition">B) 1% (Reflection coefficient 0.1)</button>
+                    <button onclick="checkQuizAnswer(2)" class="w-full text-left p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs transition">C) 10% (Reflection coefficient 0.316)</button>
+                </div>
+            </div>
+            <div id="quizFeedback" class="text-xs font-semibold text-emerald-400 hidden"></div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-800">
+                <span id="quizScoreTracker" class="text-xs text-slate-400">Score: 0 / 0</span>
+                <button onclick="closeQuickQuizModal()" class="px-4 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs font-semibold rounded text-white transition">Close Quiz</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Application JavaScript Logic -->
     <script>
         // VNA State variables
-        let currentMode = 'logmag'; // 'logmag', 's21', 'smith', 'phase', 'vswr'
-        let currentDUT = 'filter';  // 'matched', 'open', 'short', 'filter', 'antenna', 'mismatch'
-        let sweepType = 'linear';   // 'linear' or 'log'
-        let startFreq = 1.0;        // MHz
-        let stopFreq = 3000.0;      // MHz
-        let markerIndex = 500;      // 0 to 1000 points
-        let isCalibrated = false;   // Calibration state
+        let currentMode = 'logmag';
+        let currentDUT = 'filter';
+        let sweepType = 'linear';
+        let startFreq = 1.0;
+        let stopFreq = 3000.0;
+        let markerIndex = 500;
+        let isCalibrated = false;
 
         const numPoints = 1001;
         let frequencies = [];
@@ -590,11 +659,9 @@
         let s21Phase = [];
         let isImportedData = false;
 
-        // DOM elements
         const canvas = document.getElementById('vnaCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Initialize simulation data
         function initSimulation() {
             updateFrequencyArray();
             computeDUTTrace();
@@ -602,7 +669,6 @@
             updateMarkerDisplay();
         }
 
-        // Compute simulated DUT reflection (S11) and transmission (S21) parameters
         function computeDUTTrace() {
             s11Mag = [];
             s11Phase = [];
@@ -637,7 +703,6 @@
                     s21m = -60.0;
                     s21p = 180.0;
                 } else if (currentDUT === 'filter') {
-                    // Low-pass filter cutoff at 1.5 GHz
                     let cutoff = 1.5e9;
                     if (f < cutoff) {
                         mag = -25.0 - Math.sin(f / cutoff * Math.PI) * 10;
@@ -650,24 +715,20 @@
                     phase = ((f / 1e9) * -120) % 360;
                     s21p = ((f / 1e9) * -180) % 360;
                 } else if (currentDUT === 'antenna') {
-                    // Resonant antenna at 2.4 GHz
                     let resF = 2.4e9;
                     let diff = Math.abs(f - resF);
                     let span = (stop - start) || 1e9;
-                    let normDiff = diff / span;
                     mag = -28.0 * Math.exp(-Math.pow(diff / (0.15 * span), 2)) - 3.0;
                     phase = (Math.atan2(diff, 1e8) * 180 / Math.PI) - 90;
                     s21m = -20.0 - mag * 0.5;
                     s21p = phase;
                 } else if (currentDUT === 'mismatch') {
-                    // 75 ohm mismatch in 50 ohm system -> Return loss ~ -14 dB
                     mag = -14.0 + Math.sin(i * 0.1) * 0.5;
                     phase = 45.0;
                     s21m = -1.5;
                     s21p = -10.0;
                 }
 
-                // Add calibration error if uncalibrated
                 if (!isCalibrated && !isImportedData) {
                     let ripple = Math.sin(i * 0.15) * 1.5 + Math.cos(i * 0.05) * 1.0;
                     mag = Math.min(0, mag + ripple);
@@ -753,12 +814,12 @@
             });
 
             const names = {
-                'matched': '50Ω Matched Load (Ideal Termination)',
-                'open': 'Open Circuit (Unterminated Port)',
-                'short': 'Short Circuit (Bypassed Port)',
-                'filter': 'Low-Pass Filter (Cutoff @ 1.5 GHz)',
-                'antenna': 'Resonant Antenna (Resonance @ 2.4 GHz)',
-                'mismatch': 'Mismatched Load (75Ω Impedance)'
+                'matched': '50Ω Matched Load',
+                'open': 'Open Circuit',
+                'short': 'Short Circuit',
+                'filter': 'Low-Pass Filter (Butterworth)',
+                'antenna': 'Resonant Antenna (2.4 GHz)',
+                'mismatch': 'Mismatched Load (75Ω)'
             };
             document.getElementById('activeDUTName').innerText = `DUT: ${names[dutType]}`;
             updateTutorInfo(dutType);
@@ -772,33 +833,178 @@
             const tutorEl = document.getElementById('tutorText');
             let text = "";
             if (dut === 'matched') {
-                text = "<strong>50Ω Matched Load:</strong> Absorbs nearly all RF power. Return loss is <-30 dB, and S21 transmission is flat near 0 dB if connected as a thru line.";
+                text = "<strong>50Ω Matched Load:</strong> Absorbs nearly all RF power. Return loss is <-30 dB, and S21 transmission is flat near 0 dB.";
             } else if (dut === 'open') {
-                text = "<strong>Open Circuit:</strong> Reflection coefficient Γ = +1. Power bounces back in-phase (~0 dB return loss). S21 transmission is completely blocked (<-50 dB).";
+                text = "<strong>Open Circuit:</strong> Reflection coefficient Γ = +1. Power bounces back in-phase (~0 dB return loss). S21 transmission is blocked.";
             } else if (dut === 'short') {
-                text = "<strong>Short Circuit:</strong> Grounded conductor. Reflection coefficient Γ = -1 with 180° phase inversion. S21 transmission blocked.";
+                text = "<strong>Short Circuit:</strong> Grounded conductor. Reflection coefficient Γ = -1 with 180° phase inversion.";
             } else if (dut === 'filter') {
                 text = "<strong>Low-Pass Filter:</strong> Passes signals below 1.5 GHz smoothly (S21 ~0 dB), while reflecting and blocking frequencies above cutoff.";
             } else if (dut === 'antenna') {
                 text = "<strong>Resonant Antenna:</strong> Designed to radiate efficiently at 2.4 GHz. Shows a deep return loss dip and high radiation efficiency.";
             } else if (dut === 'mismatch') {
-                text = "<strong>Mismatched Load (75Ω):</strong> Causes a constant reflection (~-14 dB return loss) across all frequencies due to 75Ω vs 50Ω impedance delta.";
+                text = "<strong>Mismatched Load (75Ω):</strong> Causes a constant reflection (~-14 dB return loss) across all frequencies.";
             }
             tutorEl.innerHTML = text;
         }
 
-        // Dedicated educational helper to explain Phase when user asks or clicks
         function explainPhaseConcept() {
             const tutorEl = document.getElementById('tutorText');
             tutorEl.innerHTML = `
                 <p class="font-semibold text-sky-400 mb-1">💡 What is RF Phase (°)?</p>
-                <p><strong>Phase</strong> measures the time delay or angular shift (from 0° to 360°, or -180° to +180°) between the <em>incident wave</em> sent by the VNA and the <em>reflected wave</em> bounced back from the DUT.</p>
-                <ul class="list-disc pl-4 mt-1.5 space-y-1 text-slate-300">
-                    <li><strong>Short Circuit (-180° / 180°):</strong> Reverses wave polarity completely upon impact.</li>
+                <p><strong>Phase</strong> measures angular shift (from -180° to +180°) between incident and reflected waves.</p>
+                <ul class="list-disc pl-4 mt-1 space-y-0.5 text-slate-300">
+                    <li><strong>Short Circuit (-180°):</strong> Reverses wave polarity completely.</li>
                     <li><strong>Open Circuit (0°):</strong> Bounces back in-phase without inversion.</li>
-                    <li><strong>Electrical Length:</strong> As frequency increases, electrical delay causes the phase to wrap around in cycles. This is how VNA engineers calculate precise cable lengths and distance-to-fault!</li>
                 </ul>
             `;
+        }
+
+        function openLearningHubModal() {
+            document.getElementById('learningHubModal').classList.remove('hidden');
+        }
+
+        function closeLearningHubModal() {
+            document.getElementById('learningHubModal').classList.add('hidden');
+        }
+
+        function selectHubModule(modNum) {
+            for (let i = 1; i <= 3; i++) {
+                const el = document.getElementById('hubMod' + i);
+                if (i === modNum) {
+                    el.className = "p-3 rounded-lg border border-emerald-500 bg-emerald-950/40 cursor-pointer transition";
+                    el.querySelector('div').className = "font-bold text-xs text-emerald-300 mb-1";
+                } else {
+                    el.className = "p-3 rounded-lg border border-slate-700 bg-slate-900/80 hover:bg-slate-800 cursor-pointer transition";
+                    el.querySelector('div').className = "font-bold text-xs text-white mb-1";
+                }
+            }
+
+            const contentBox = document.getElementById('hubModuleContent');
+            if (modNum === 1) {
+                contentBox.innerHTML = `
+                    <h4 class="font-bold text-sm text-emerald-400">Module 1: Understanding S-Parameters and Return Loss (dB)</h4>
+                    <p>An <strong>S-parameter (Scattering parameter)</strong> describes how RF energy propagates through a multi-port network. For a 1-port reflection measurement:</p>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-300">
+                        <li><strong>S11</strong> represents the power reflected from Port 1 back into Port 1.</li>
+                        <li><strong>Return Loss (RL):</strong> Defined as $\\text{RL} = -20\\log_{10}|\\Gamma|$. Higher positive dB values (e.g., $30\\text{ dB}$) mean very little reflection and an excellent 50Ω match.</li>
+                        <li><strong>VSWR (Voltage Standing Wave Ratio):</strong> The ratio of maximum to minimum voltage standing wave amplitudes. An ideal match gives $\\text{VSWR} = 1.0$.</li>
+                    </ul>
+                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-sky-300">
+                        💡 <strong>Try this:</strong> Select the <strong>50Ω Match</strong> DUT on the main screen, then switch to <strong>Low-Pass Filter</strong> and inspect how S11 spikes above 1.5 GHz!
+                    </div>
+                `;
+            } else if (modNum === 2) {
+                contentBox.innerHTML = `
+                    <h4 class="font-bold text-sm text-emerald-400">Module 2: Calibration (Short-Open-Load / SOL)</h4>
+                    <p>VNA cables and connectors introduce parasitic phase shifts, attenuation, and impedance mismatch ripple. Calibration mathematically removes these systematic errors:</p>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-300">
+                        <li><strong>Short Standard:</strong> $\\Gamma = -1$, phase = -180°.</li>
+                        <li><strong>Open Standard:</strong> $\\Gamma = +1$, phase = 0°.</li>
+                        <li><strong>Load Standard ($50\\Omega$):</strong> $\\Gamma = 0$, absorbs all power.</li>
+                    </ul>
+                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-sky-300">
+                        💡 <strong>Try this:</strong> Look at the uncalibrated ripple on the trace, then click <strong>Perform SOL Cal</strong> in the top header to see the trace straighten out cleanly!
+                    </div>
+                `;
+            } else if (modNum === 3) {
+                contentBox.innerHTML = `
+                    <h4 class="font-bold text-sm text-emerald-400">Module 3: Smith Chart Geometry & Impedance Mapping</h4>
+                    <p>The Smith Chart maps complex impedance ($Z = R + jX$) onto a polar reflection coefficient ($S11$) plane:</p>
+                    <ul class="list-disc pl-5 space-y-1 text-slate-300">
+                        <li><strong>Center ($50+j0\\,\\Omega$):</strong> Perfect match ($\\Gamma = 0$).</li>
+                        <li><strong>Far Right (Open Circuit):</strong> Infinite impedance ($\\Gamma = +1$).</li>
+                        <li><strong>Far Left (Short Circuit):</strong> Zero impedance ($\\Gamma = -1$).</li>
+                    </ul>
+                    <div class="bg-slate-900 p-2.5 rounded border border-slate-800 text-sky-300">
+                        💡 <strong>Try this:</strong> Switch the measurement mode to <strong>Smith Chart</strong> in the VNA view to observe how different DUTs trace curves across resistance and reactance circles.
+                    </div>
+                `;
+            }
+        }
+
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        const quizData = [
+            {
+                q: "If a device under test has a Return Loss (S11) of -20 dB, what percentage of incident power is reflected back?",
+                options: ["A) 50% (Reflection coefficient 0.5)", "B) 1% (Reflection coefficient 0.1)", "C) 10% (Reflection coefficient 0.316)"],
+                correct: 1,
+                explanation: "Correct! -20 dB return loss means |Γ| = 0.1, and reflected power is |Γ|² = 0.01 or 1%."
+            },
+            {
+                q: "What is the theoretical VSWR of a perfect 50Ω matched load terminated in a 50Ω system?",
+                options: ["A) 1.0", "B) 2.0", "C) Infinite (∞)"],
+                correct: 0,
+                explanation: "Correct! A perfect match has zero reflection (Γ = 0), yielding a VSWR of exactly 1.0."
+            },
+            {
+                q: "When measuring an ideal Open Circuit on a reflection port, what is the reflection coefficient magnitude (|Γ|)?",
+                options: ["A) 0.0", "B) 1.0", "C) 0.5"],
+                correct: 1,
+                explanation: "Correct! An open circuit reflects 100% of incident wave energy in-phase, so |Γ| = 1.0."
+            }
+        ];
+
+        function openQuickQuizModal() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quickQuizModal').classList.remove('hidden');
+            renderQuizQuestion();
+        }
+
+        function closeQuickQuizModal() {
+            document.getElementById('quickQuizModal').classList.add('hidden');
+        }
+
+        function renderQuizQuestion() {
+            const q = quizData[currentQuizIndex];
+            document.getElementById('quizQTitle').innerText = `Question ${currentQuizIndex + 1} of ${quizData.length}`;
+            document.getElementById('quizQText').innerText = q.q;
+            const optBox = document.getElementById('quizOptions');
+            optBox.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-2 rounded bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 text-xs transition";
+                btn.innerText = opt;
+                btn.onclick = () => checkQuizAnswer(idx);
+                optBox.appendChild(btn);
+            });
+            document.getElementById('quizFeedback').classList.add('hidden');
+            document.getElementById('quizScoreTracker').innerText = `Score: ${quizScore} / ${currentQuizIndex}`;
+        }
+
+        function checkQuizAnswer(selectedIdx) {
+            const q = quizData[currentQuizIndex];
+            const feedbackEl = document.getElementById('quizFeedback');
+            feedbackEl.classList.remove('hidden');
+            if (selectedIdx === q.correct) {
+                quizScore++;
+                feedbackEl.className = "text-xs font-semibold text-emerald-400 bg-emerald-950/40 p-2 rounded border border-emerald-800";
+                feedbackEl.innerText = "✅ " + q.explanation;
+            } else {
+                feedbackEl.className = "text-xs font-semibold text-rose-400 bg-rose-950/40 p-2 rounded border border-rose-800";
+                feedbackEl.innerText = "❌ Incorrect. " + q.explanation;
+            }
+
+            document.getElementById('quizScoreTracker').innerText = `Score: ${quizScore} / ${currentQuizIndex + 1}`;
+
+            setTimeout(() => {
+                currentQuizIndex++;
+                if (currentQuizIndex < quizData.length) {
+                    renderQuizQuestion();
+                } else {
+                    document.getElementById('quizQuestionBox').innerHTML = `
+                        <div class="text-center py-4 space-y-2">
+                            <h4 class="text-base font-bold text-emerald-400">Quiz Completed! 🎉</h4>
+                            <p class="text-slate-300">Your Final Score: <span class="font-bold text-white">${quizScore} / ${quizData.length}</span></p>
+                            <button onclick="openQuickQuizModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-semibold rounded text-white transition mt-2">Retake Quiz</button>
+                        </div>
+                    `;
+                    document.getElementById('quizOptions').innerHTML = '';
+                    feedbackEl.classList.add('hidden');
+                }
+            }, 3000);
         }
 
         function setMeasurementMode(mode) {
@@ -833,10 +1039,7 @@
             };
             document.getElementById('displayModeLabel').innerText = labels[mode];
 
-            // If user switches to phase mode, automatically display the Phase educational guide!
-            if (mode === 'phase') {
-                explainPhaseConcept();
-            }
+            if (mode === 'phase') explainPhaseConcept();
 
             drawVNA();
             updateMarkerDisplay();
@@ -844,7 +1047,7 @@
 
         function performCalibration() {
             isCalibrated = true;
-            document.getElementById('calStatusBadge').innerText = "CAL: SOL (OSL) Corrected";
+            document.getElementById('calStatusBadge').innerText = "CAL: SOL Corrected";
             document.getElementById('calStatusBadge').className = "text-emerald-400 font-semibold";
             document.getElementById('calBtn').innerText = "Calibrated ✓";
             computeDUTTrace();
@@ -852,14 +1055,58 @@
             updateMarkerDisplay();
         }
 
-        function resetCalibration() {
-            isCalibrated = false;
-            document.getElementById('calStatusBadge').innerText = "Uncalibrated (RAW)";
-            document.getElementById('calStatusBadge').className = "text-amber-400 font-semibold";
-            document.getElementById('calBtn').innerText = "Perform SOL Cal";
-            computeDUTTrace();
-            drawVNA();
-            updateMarkerDisplay();
+        function exportTouchstone() {
+            let s1p = "! Touchstone .s1p File Export\n# MHz S RI R 50\n";
+            for (let i = 0; i < numPoints; i++) {
+                let fMHz = frequencies[i] / 1e6;
+                s1p += `${fMHz.toFixed(3)} ${s11Real[i].toFixed(4)} ${s11Imag[i].toFixed(4)}\n`;
+            }
+            const blob = new Blob([s1p], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentDUT}_measured.s1p`;
+            a.click();
+        }
+
+        function importTouchstone(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let newFreqs = [], newRe = [], newIm = [], newMag = [];
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line || line.startsWith('!') || line.startsWith('#')) continue;
+                    let parts = line.split(/\s+/);
+                    if (parts.length >= 3) {
+                        let f = parseFloat(parts[0]);
+                        let re = parseFloat(parts[1]);
+                        let im = parseFloat(parts[2]);
+                        newFreqs.push(f * 1e6);
+                        newRe.push(re);
+                        newIm.push(im);
+                        let mag = 20 * Math.log10(Math.sqrt(re*re + im*im) || 1e-6);
+                        newMag.push(mag);
+                    }
+                }
+                if (newFreqs.length > 10) {
+                    frequencies = newFreqs;
+                    s11Real = newRe;
+                    s11Imag = newIm;
+                    s11Mag = newMag;
+                    s11Phase = newRe.map((re, idx) => Math.atan2(newIm[idx], re) * 180 / Math.PI);
+                    s21Mag = newMag.map(m => m * 0.1);
+                    s21Phase = s11Phase;
+                    isImportedData = true;
+                    document.getElementById('activeDUTName').innerText = `DUT: Imported file (${file.name})`;
+                    drawVNA();
+                    updateMarkerDisplay();
+                }
+            };
+            reader.readAsText(file);
         }
 
         function onMarkerSliderMove(val) {
@@ -884,25 +1131,22 @@
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const width = canvas.width;
-            
             let ratio = Math.max(0, Math.min(1, x / width));
             markerIndex = Math.floor(ratio * (numPoints - 1));
-            document.getElementById('markerSlider').value = Math.floor(ratio * 1000);
-            
+            const slider = document.getElementById('markerSlider');
+            if (slider) slider.value = Math.floor(ratio * 1000);
             updateMarkerDisplay();
             drawVNA();
         }
 
         function updateMarkerDisplay() {
-            let fHz = frequencies[markerIndex];
+            let fHz = frequencies[markerIndex] || frequencies[0];
             let fText = fHz >= 1e9 ? (fHz / 1e9).toFixed(3) + ' GHz' : (fHz / 1e6).toFixed(2) + ' MHz';
             document.getElementById('mFreq').innerText = fText;
-            document.getElementById('markerSliderVal').innerText = fText;
+            const sliderVal = document.getElementById('markerSliderVal');
+            if (sliderVal) sliderVal.innerText = fText;
 
-            // Safeguard array lookups
-            if (!s11Mag || s11Mag.length <= markerIndex) {
-                computeDUTTrace();
-            }
+            if (!s11Mag || s11Mag.length <= markerIndex) computeDUTTrace();
 
             let mag = s11Mag[markerIndex] !== undefined ? s11Mag[markerIndex] : -20;
             let phase = s11Phase[markerIndex] !== undefined ? s11Phase[markerIndex] : 0;
@@ -921,170 +1165,51 @@
             gammaLin = Math.min(0.999, Math.max(0, gammaLin));
             let vswr = (1 + gammaLin) / (1 - gammaLin);
             document.getElementById('mVSWR').innerText = vswr > 50 ? '> 50' : vswr.toFixed(2);
+
+            let re = s11Real[markerIndex] !== undefined ? s11Real[markerIndex] : 0;
+            let im = s11Imag[markerIndex] !== undefined ? s11Imag[markerIndex] : 0;
+            let denom = Math.pow(1 - re, 2) + Math.pow(im, 2) || 1e-6;
+            let rNorm = (1 - re * re - im * im) / denom;
+            let xNorm = (2 * im) / denom;
+            let zReal = Math.max(0, rNorm * 50);
+            let zImag = xNorm * 50;
+            let returnLoss = -mag;
+            let mismatchLoss = -10 * Math.log10(Math.max(1e-6, 1 - gammaLin * gammaLin));
+
+            const vnaFormulaBox = document.getElementById('vnaLiveFormulas');
+            if (vnaFormulaBox) {
+                vnaFormulaBox.innerHTML = `
+                    <div class="bg-slate-900/90 p-2 rounded border border-slate-800/80">
+                        <div class="text-slate-400 text-[10px]">1. Reflection Coefficient & Return Loss:</div>
+                        <div class="text-emerald-300">|Γ| = 10^(S11/20) = <span class="text-white font-bold">${gammaLin.toFixed(3)}</span> ∠ ${phase.toFixed(1)}°</div>
+                        <div class="text-sky-300">RL = -20·log₁₀(|Γ|) = <span class="text-white font-bold">${returnLoss.toFixed(2)} dB</span></div>
+                    </div>
+                    <div class="bg-slate-900/90 p-2 rounded border border-slate-800/80">
+                        <div class="text-slate-400 text-[10px]">2. Standing Wave & Load Impedance (Z₀=50Ω):</div>
+                        <div class="text-amber-300">VSWR = (1+|Γ|)/(1-|Γ|) = <span class="text-white font-bold">${vswr > 50 ? '>50' : vswr.toFixed(2)}</span> (ML: ${mismatchLoss.toFixed(2)} dB)</div>
+                        <div class="text-purple-300">Z = Z₀·(1+Γ)/(1-Γ) = <span class="text-white font-bold">${zReal.toFixed(1)} ${zImag >= 0 ? '+' : '-'} j${Math.abs(zImag).toFixed(1)} Ω</span></div>
+                    </div>
+                `;
+            }
         }
 
-        function exportTouchstone() {
-            let s1pData = `! WebVNA Touchstone .s1p Export File\n`;
-            s1pData += `! DUT: ${currentDUT} | Calibrated: ${isCalibrated}\n`;
-            s1pData += `# MHz S RI R 50\n`;
-            for (let i = 0; i < numPoints; i++) {
-                let fMHz = frequencies[i] / 1e6;
-                let re = s11Real[i];
-                let im = s11Imag[i];
-                s1pData += `${fMHz.toFixed(4)} ${re.toFixed(4)} ${im.toFixed(4)}\n`;
-            }
-
-            const blob = new Blob([s1pData], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `vna_${currentDUT}_s11.s1p`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        // Import Touchstone .s1p file handler
-        function importTouchstone(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                parseTouchstoneData(content, file.name);
-            };
-            reader.readAsText(file);
-        }
-
-        function parseTouchstoneData(text, filename) {
-            const lines = text.split('\n');
-            let importedFreqs = [];
-            let importedRe = [];
-            let importedIm = [];
-            let formatType = 'RI'; // Default Real/Imag
-            let freqMultiplier = 1e6; // Default MHz
-
-            for (let line of lines) {
-                line = line.trim();
-                if (!line || line.startsWith('!')) continue;
-
-                if (line.startsWith('#')) {
-                    // Option line e.g., # GHz S MA R 50
-                    const upper = line.toUpperCase();
-                    if (upper.includes('GHZ')) freqMultiplier = 1e9;
-                    else if (upper.includes('KHZ')) freqMultiplier = 1e3;
-                    else if (upper.includes('MHZ')) freqMultiplier = 1e6;
-
-                    if (upper.includes('MA')) formatType = 'MA'; // Magnitude / Angle
-                    else if (upper.includes('DB')) formatType = 'DB'; // dB / Angle
-                    else if (upper.includes('RI')) formatType = 'RI'; // Real / Imag
-                    continue;
-                }
-
-                const parts = line.split(/\s+/);
-                if (parts.length >= 3) {
-                    let fVal = parseFloat(parts[0]) * freqMultiplier;
-                    let p1 = parseFloat(parts[1]);
-                    let p2 = parseFloat(parts[2]);
-
-                    let re = 0, im = 0;
-                    if (formatType === 'RI') {
-                        re = p1;
-                        im = p2;
-                    } else if (formatType === 'MA') {
-                        let rad = p2 * Math.PI / 180;
-                        re = p1 * Math.cos(rad);
-                        im = p1 * Math.sin(rad);
-                    } else if (formatType === 'DB') {
-                        let linMag = Math.pow(10, p1 / 20);
-                        let rad = p2 * Math.PI / 180;
-                        re = linMag * Math.cos(rad);
-                        im = linMag * Math.sin(rad);
-                    }
-
-                    importedFreqs.push(fVal);
-                    importedRe.push(re);
-                    importedIm.push(im);
-                }
-            }
-
-            if (importedFreqs.length < 2) {
-                alert("Error: Could not parse valid S11 data points from the uploaded .s1p file.");
-                return;
-            }
-
-            // Resample / map to our numPoints buffer
-            frequencies = [];
-            s11Real = [];
-            s11Imag = [];
-            s11Mag = [];
-            s11Phase = [];
-            s21Mag = [];
-            s21Phase = [];
-
-            const minF = importedFreqs[0];
-            const maxF = importedFreqs[importedFreqs.length - 1];
-
-            document.getElementById('startFreqInput').value = (minF / 1e6).toFixed(2);
-            document.getElementById('stopFreqInput').value = (maxF / 1e6).toFixed(2);
-
-            for (let i = 0; i < numPoints; i++) {
-                let f = minF + (maxF - minF) * (i / (numPoints - 1));
-                frequencies.push(f);
-
-                // Find nearest index in imported data
-                let idx = 0;
-                for (let j = 0; j < importedFreqs.length; j++) {
-                    if (importedFreqs[j] >= f) {
-                        idx = j;
-                        break;
-                    }
-                    idx = j;
-                }
-
-                let re = importedRe[idx];
-                let im = importedIm[idx];
-                s11Real.push(re);
-                s11Imag.push(im);
-
-                let magLin = Math.sqrt(re * re + im * im);
-                let magDb = 20 * Math.log10(Math.max(1e-5, magLin));
-                let phaseDeg = Math.atan2(im, re) * (180 / Math.PI);
-
-                s11Mag.push(magDb);
-                s11Phase.push(phaseDeg);
-                s21Mag.push(-10 - magDb * 0.5); // Simulated pass-through response
-                s21Phase.push((phaseDeg + 90) % 360);
-            }
-
-            isImportedData = true;
-            document.getElementById('activeDUTName').innerText = `DUT: Imported File (${filename})`;
-            document.getElementById('hudFreqSpan').innerText = `Start: ${(minF/1e6).toFixed(1)} MHz | Stop: ${(maxF/1e6).toFixed(1)} MHz`;
-
-            markerIndex = Math.floor(numPoints / 2);
-            document.getElementById('markerSlider').value = 500;
-
-            drawVNA();
-            updateMarkerDisplay();
-        }
-
-        // Main Drawing Function for VNA Canvas
         function drawVNA() {
-            const width = canvas.parentElement.clientWidth;
-            const height = canvas.parentElement.clientHeight;
-            if (canvas.width !== width || canvas.height !== height) {
-                canvas.width = width;
-                canvas.height = height;
+            const parent = canvas.parentElement;
+            const w = parent.clientWidth;
+            const h = parent.clientHeight;
+            if (w === 0 || h === 0) return;
+
+            if (canvas.width !== w || canvas.height !== h) {
+                canvas.width = w;
+                canvas.height = h;
             }
 
-            ctx.clearRect(0, 0, width, height);
+            ctx.clearRect(0, 0, w, h);
 
             if (currentMode === 'smith') {
-                drawSmithChart(width, height);
+                drawSmithChart(w, h);
             } else {
-                drawCartesianGrid(width, height);
+                drawCartesianGrid(w, h);
             }
         }
 
@@ -1132,13 +1257,6 @@
                 ctx.fillText(val.toFixed(0) + unit, padLeft - 8, y + 4);
             }
 
-            ctx.textAlign = 'center';
-            let sMHz = startFreq;
-            let eMHz = stopFreq;
-            ctx.fillText(sMHz >= 1000 ? (sMHz/1000).toFixed(1)+'GHz' : sMHz.toFixed(0)+'MHz', padLeft, padTop + plotH + 18);
-            ctx.fillText(((sMHz+eMHz)/2 >= 1000 ? ((sMHz+eMHz)/2000).toFixed(1)+'GHz' : ((sMHz+eMHz)/2).toFixed(0)+'MHz'), padLeft + plotW/2, padTop + plotH + 18);
-            ctx.fillText(eMHz >= 1000 ? (eMHz/1000).toFixed(1)+'GHz' : eMHz.toFixed(0)+'MHz', padLeft + plotW, padTop + plotH + 18);
-
             ctx.strokeStyle = currentMode === 'phase' ? '#38bdf8' : (currentMode === 'vswr' ? '#fbbf24' : (currentMode === 's21' ? '#a855f7' : '#00ff66'));
             ctx.lineWidth = 2;
             ctx.beginPath();
@@ -1152,7 +1270,6 @@
                     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 } else if (currentMode === 's21') {
                     val = Math.max(-60, Math.min(10, s21Mag[i]));
-                    // Map -60 to +10 dB across plotH
                     let normalized = (val - (-60)) / 70;
                     let y = padTop + plotH * (1 - normalized);
                     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
@@ -1224,7 +1341,6 @@
 
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
-
             ctx.beginPath();
             ctx.moveTo(cx - radius, cy);
             ctx.lineTo(cx + radius, cy);
@@ -1234,9 +1350,8 @@
             rCircles.forEach(r => {
                 let rNorm = radius / (1 + r);
                 let cXCenter = cx + radius - rNorm;
-                let cRadius = rNorm;
                 ctx.beginPath();
-                ctx.arc(cXCenter, cy, cRadius, 0, 2 * Math.PI);
+                ctx.arc(cXCenter, cy, rNorm, 0, 2 * Math.PI);
                 ctx.stroke();
             });
 
@@ -1269,14 +1384,6 @@
             let mPx = cx + mRe * radius;
             let mPy = cy - mIm * radius;
 
-            ctx.strokeStyle = '#ffffff';
-            ctx.setLineDash([2, 2]);
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(mPx, mPy);
-            ctx.stroke();
-            ctx.setLineDash([]);
-
             ctx.fillStyle = '#fbbf24';
             ctx.beginPath();
             ctx.arc(mPx, mPy, 6, 0, 2 * Math.PI);
@@ -1285,8 +1392,6 @@
             ctx.fillStyle = '#94a3b8';
             ctx.font = '10px "JetBrains Mono", monospace';
             ctx.fillText('50Ω Match (Center)', cx + 6, cy - 6);
-            ctx.fillText('Open (γ=1)', cx + radius - 55, cy - 6);
-            ctx.fillText('Short (γ=-1)', cx - radius + 10, cy - 6);
         }
 
         function openHelpModal() {
@@ -1300,14 +1405,15 @@
         // =========================================================================
         // LC SMITH TUNER & IMPEDANCE MATCHING LAB ENGINE
         // =========================================================================
-        let currentAppMode = 'vna'; // 'vna' or 'tuner'
-        let tunerTopology = 'l_lp'; // 'l_lp', 'l_hp', 'series_rlc', 'parallel_rlc'
+        let currentAppMode = 'vna';
+        let tunerTopology = 'l_lp';
         let isIdealComponents = true;
+        let tunerRangeMode = 'ghz';
+        let activeLabExercise = 0;
 
         const tunerCanvas = document.getElementById('tunerSmithCanvas');
         const tCtx = tunerCanvas.getContext('2d');
 
-        // Complex number arithmetic helpers
         const CMath = {
             add: (a, b) => ({ re: a.re + b.re, im: a.im + b.im }),
             sub: (a, b) => ({ re: a.re - b.re, im: a.im - b.im }),
@@ -1357,21 +1463,22 @@
 
         function setTunerTopology(topo) {
             tunerTopology = topo;
-            const topos = ['l_lp', 'l_hp', 'series_rlc', 'parallel_rlc'];
-            topos.forEach(t => {
+            ['l_lp', 'l_hp', 'series_rlc', 'parallel_rlc'].forEach(t => {
                 const btn = document.getElementById('topo-' + t);
-                if (t === topo) {
-                    btn.className = "p-2 rounded text-left border border-blue-500/60 bg-blue-950/40 transition shadow";
-                } else {
-                    btn.className = "p-2 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition";
+                if (btn) {
+                    if (t === topo) {
+                        btn.className = "p-2 rounded text-left border border-blue-500/60 bg-blue-950/40 transition shadow";
+                    } else {
+                        btn.className = "p-2 rounded text-left border border-slate-700 bg-slate-800/80 hover:bg-slate-700 transition";
+                    }
                 }
             });
 
             const names = {
                 'l_lp': 'L-Net Low-Pass (Series L + Shunt C)',
                 'l_hp': 'L-Net High-Pass (Series C + Shunt L)',
-                'series_rlc': 'Serie Pur (Z_L + L + C)',
-                'parallel_rlc': 'Paralel Pur (Z_L || L || C)'
+                'series_rlc': 'Pure Series (Z_L + L + C)',
+                'parallel_rlc': 'Pure Shunt (Z_L || L || C)'
             };
             document.getElementById('tunerHudTopology').innerText = names[topo];
             updateTuner();
@@ -1386,13 +1493,110 @@
             if (ideal) {
                 btnIdeal.className = "px-2.5 py-1 text-[11px] font-bold rounded bg-blue-600 text-white transition";
                 btnReal.className = "px-2.5 py-1 text-[11px] font-bold rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
-                badge.innerText = "Componente Ideale (Q = ∞)";
+                badge.innerText = "Ideal Components (Q = ∞)";
                 badge.className = "text-emerald-400";
             } else {
                 btnIdeal.className = "px-2.5 py-1 text-[11px] font-bold rounded bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
                 btnReal.className = "px-2.5 py-1 text-[11px] font-bold rounded bg-amber-600 text-white transition";
-                badge.innerText = "Componente Reale SMD (Q_L=45, Q_C=200)";
+                badge.innerText = "Real SMD Components (Q_L=45, Q_C=200)";
                 badge.className = "text-amber-400";
+            }
+            updateTuner();
+        }
+
+        function setTunerRangeMode(mode) {
+            tunerRangeMode = mode;
+            const sL = document.getElementById('sliderTunerL');
+            const sC = document.getElementById('sliderTunerC');
+            const btnGHz = document.getElementById('btnRangeGHz');
+            const btnSub = document.getElementById('btnRangeSubGHz');
+
+            if (mode === 'ghz') {
+                sL.min = "0.05"; sL.max = "25"; sL.step = "0.05";
+                sC.min = "0.05"; sC.max = "20"; sC.step = "0.05";
+                if (parseFloat(sL.value) > 25) sL.value = "4.50";
+                if (parseFloat(sC.value) > 20) sC.value = "1.45";
+                document.getElementById('minLabelL').innerText = "0.05 nH";
+                document.getElementById('maxLabelL').innerText = "25.0 nH";
+                document.getElementById('minLabelC').innerText = "0.05 pF";
+                document.getElementById('maxLabelC').innerText = "20.0 pF";
+                btnGHz.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-sky-600 text-white transition";
+                btnSub.className = "px-2 py-0.5 text-[10px] font-bold rounded text-slate-300 hover:text-white transition";
+            } else {
+                sL.min = "0.5"; sL.max = "300"; sL.step = "0.5";
+                sC.min = "0.5"; sC.max = "200"; sC.step = "0.5";
+                document.getElementById('minLabelL').innerText = "0.5 nH";
+                document.getElementById('maxLabelL').innerText = "300 nH";
+                document.getElementById('minLabelC').innerText = "0.5 pF";
+                document.getElementById('maxLabelC').innerText = "200 pF";
+                btnSub.className = "px-2 py-0.5 text-[10px] font-bold rounded bg-sky-600 text-white transition";
+                btnGHz.className = "px-2 py-0.5 text-[10px] font-bold rounded text-slate-300 hover:text-white transition";
+            }
+            updateTuner();
+        }
+
+        function onTunerFreqChange() {
+            const fMHz = parseFloat(document.getElementById('sliderTunerFreq').value);
+            if (fMHz >= 1000 && tunerRangeMode !== 'ghz') {
+                setTunerRangeMode('ghz');
+                return;
+            } else if (fMHz < 600 && tunerRangeMode !== 'subghz') {
+                setTunerRangeMode('subghz');
+                return;
+            }
+            updateTuner();
+        }
+
+        function loadLabExercise(num) {
+            activeLabExercise = num;
+            const promptEl = document.getElementById('labExercisePrompt');
+            const badgeEl = document.getElementById('labChallengeBadge');
+            document.getElementById('bypassL').checked = false;
+            document.getElementById('bypassC').checked = false;
+
+            if (num === 1) {
+                setTunerTopology('l_lp');
+                setComponentQuality(true);
+                setTunerRangeMode('ghz');
+                document.getElementById('sliderTunerFreq').value = 2450;
+                document.getElementById('sliderTunerRL').value = 22;
+                document.getElementById('sliderTunerXL').value = -38;
+                document.getElementById('sliderTunerL').value = 1.50;
+                document.getElementById('sliderTunerC').value = 0.50;
+                badgeEl.innerText = "Lab 1 Active";
+                promptEl.innerHTML = "<strong>Goal (2.45 GHz Patch Antenna):</strong> Match Z_L = 22 - j38 Ω to 50 Ω using L-Net Low-Pass.";
+            } else if (num === 2) {
+                setTunerTopology('l_hp');
+                setComponentQuality(true);
+                setTunerRangeMode('subghz');
+                document.getElementById('sliderTunerFreq').value = 433;
+                document.getElementById('sliderTunerRL').value = 15;
+                document.getElementById('sliderTunerXL').value = 25;
+                document.getElementById('sliderTunerL').value = 12.0;
+                document.getElementById('sliderTunerC').value = 10.0;
+                badgeEl.innerText = "Lab 2 Active";
+                promptEl.innerHTML = "<strong>Goal (433 MHz LoRa):</strong> Match Z_L = 15 + j25 Ω using High-Pass network.";
+            } else if (num === 3) {
+                setTunerTopology('l_lp');
+                setComponentQuality(false);
+                setTunerRangeMode('ghz');
+                document.getElementById('sliderTunerFreq').value = 2500;
+                document.getElementById('sliderTunerRL').value = 10;
+                document.getElementById('sliderTunerXL').value = -50;
+                autoMatchCurrentLoad();
+                badgeEl.innerText = "Lab 3 Active";
+                promptEl.innerHTML = "<strong>Goal (ESR Q Loss):</strong> Toggle between Ideal and Real SMD to observe parasitic ESR loss.";
+            } else if (num === 4) {
+                setTunerTopology('series_rlc');
+                setComponentQuality(true);
+                setTunerRangeMode('subghz');
+                document.getElementById('sliderTunerFreq').value = 500;
+                document.getElementById('sliderTunerRL').value = 25;
+                document.getElementById('sliderTunerXL').value = -40;
+                document.getElementById('sliderTunerL').value = 20.0;
+                document.getElementById('sliderTunerC').value = 15.0;
+                badgeEl.innerText = "Lab 4 Active";
+                promptEl.innerHTML = "<strong>Goal (Series vs Shunt):</strong> Observe why series elements are constrained to constant-R circles.";
             }
             updateTuner();
         }
@@ -1403,16 +1607,16 @@
             updateTuner();
         }
 
-        function nudgeTunerParam(sliderId, delta) {
+        function nudgeTunerParam(sliderId, direction) {
             const el = document.getElementById(sliderId);
             const min = parseFloat(el.min);
             const max = parseFloat(el.max);
-            let next = parseFloat(el.value) + delta;
-            el.value = Math.max(min, Math.min(max, next));
+            const step = parseFloat(el.step) || 0.05;
+            let next = parseFloat(el.value) + direction * step;
+            el.value = Math.max(min, Math.min(max, next)).toFixed(2);
             updateTuner();
         }
 
-        // Compute impedance of L or C at frequency f (Hz)
         function getInductorZ(L_nH, f_Hz) {
             const w = 2 * Math.PI * f_Hz;
             const XL = w * (L_nH * 1e-9);
@@ -1427,18 +1631,15 @@
             return { re: ESR, im: XC };
         }
 
-        // Evaluate full circuit Z_in for a given frequency, L, and C
         function evaluateCircuitZin(f_Hz, zLoad, L_nH, C_pF, bypassL, bypassC) {
             const zL_comp = bypassL ? null : getInductorZ(L_nH, f_Hz);
             const zC_comp = bypassC ? null : getCapacitorZ(C_pF, f_Hz);
 
             if (tunerTopology === 'l_lp') {
-                // Load -> Series L -> Shunt C (toward source)
                 let zMid = zL_comp ? CMath.add(zLoad, zL_comp) : zLoad;
                 let zIn = zC_comp ? CMath.parallel(zMid, zC_comp) : zMid;
                 return { zMid, zIn };
             } else if (tunerTopology === 'l_hp') {
-                // Load -> Series C -> Shunt L (toward source)
                 let zMid = zC_comp ? CMath.add(zLoad, zC_comp) : zLoad;
                 let zIn = zL_comp ? CMath.parallel(zMid, zL_comp) : zMid;
                 return { zMid, zIn };
@@ -1447,14 +1648,12 @@
                 let zIn = zC_comp ? CMath.add(zMid, zC_comp) : zMid;
                 return { zMid, zIn };
             } else {
-                // parallel_rlc
                 let zMid = zL_comp ? CMath.parallel(zLoad, zL_comp) : zLoad;
                 let zIn = zC_comp ? CMath.parallel(zMid, zC_comp) : zMid;
                 return { zMid, zIn };
             }
         }
 
-        // Analytical Auto-Match solver to bring Z_L close to 50 + j0 Ohm
         function autoMatchCurrentLoad() {
             const fMHz = parseFloat(document.getElementById('sliderTunerFreq').value);
             const fHz = fMHz * 1e6;
@@ -1466,61 +1665,44 @@
             document.getElementById('bypassL').checked = false;
             document.getElementById('bypassC').checked = false;
 
-            if (tunerTopology === 'l_lp' || tunerTopology === 'l_hp') {
-                // Standard L-network with series element on Load side, shunt element on Source side
-                // Requires RL < Z0 for standard orientation; if RL >= Z0, find best numerical match
-                if (RL < Z0) {
-                    const B_shunt = Math.sqrt((Z0 - RL) / RL) / Z0;
-                    const X_series_target = Math.sqrt(RL * (Z0 - RL));
-                    if (tunerTopology === 'l_lp') {
-                        // Series L, Shunt C
-                        const X_L = X_series_target - XL;
-                        const L_nH = Math.max(0.5, (X_L / w) * 1e9);
-                        const C_pF = Math.max(0.5, (B_shunt / w) * 1e12);
-                        document.getElementById('sliderTunerL').value = Math.min(300, L_nH).toFixed(1);
-                        document.getElementById('sliderTunerC').value = Math.min(200, C_pF).toFixed(1);
-                    } else {
-                        // Series C, Shunt L
-                        const X_C = -X_series_target - XL;
-                        const C_pF = X_C < 0 ? (-1 / (w * X_C)) * 1e12 : 0.5;
-                        const L_nH = (1 / (w * B_shunt)) * 1e9;
-                        document.getElementById('sliderTunerC').value = Math.max(0.5, Math.min(200, C_pF)).toFixed(1);
-                        document.getElementById('sliderTunerL').value = Math.max(0.5, Math.min(300, L_nH)).toFixed(1);
-                    }
-                } else {
-                    // Grid-search optimal (L, C) for RL >= 50 Ohm
-                    let bestL = 10, bestC = 10, bestGamma = 999;
-                    for (let l = 1; l <= 250; l += 2) {
-                        for (let c = 1; c <= 180; c += 2) {
-                            const res = evaluateCircuitZin(fHz, { re: RL, im: XL }, l, c, false, false);
-                            const g = CMath.mag(CMath.zToGamma(res.zIn, Z0));
-                            if (g < bestGamma) {
-                                bestGamma = g;
-                                bestL = l;
-                                bestC = c;
-                            }
-                        }
-                    }
-                    document.getElementById('sliderTunerL').value = bestL.toFixed(1);
-                    document.getElementById('sliderTunerC').value = bestC.toFixed(1);
+            if (tunerTopology === 'l_lp') {
+                // For L-Network Low-Pass matching Z_L to Z0:
+                // If RL < Z0, we put a series inductor to move to the 1+jX circle, then shunt capacitor to center.
+                // Q_factor = sqrt(Z0/RL - 1)
+                if (RL > 0 && RL < Z0) {
+                    const Q = Math.sqrt(Z0 / RL - 1);
+                    const X_series = Q * RL; // required series reactance
+                    const X_L = X_series - XL; 
+                    const L_val = Math.max(0.05, (X_L / w) * 1e9);
+
+                    const B_shunt = Q / Z0; // required shunt susceptance
+                    const C_val = Math.max(0.05, (B_shunt / w) * 1e12);
+
+                    document.getElementById('sliderTunerL').value = Math.min(25, L_val).toFixed(2);
+                    document.getElementById('sliderTunerC').value = Math.min(20, C_val).toFixed(2);
+                } else if (RL >= Z0) {
+                    // If RL > Z0, shunt-series L-network
+                    const Q = Math.sqrt(RL / Z0 - 1);
+                    const B_shunt = Q / Z0;
+                    const C_val = Math.max(0.05, (B_shunt / w) * 1e12);
+                    const X_series = Z0 * Q;
+                    const L_val = Math.max(0.05, ((X_series - XL) / w) * 1e9);
+
+                    document.getElementById('sliderTunerL').value = Math.min(25, L_val).toFixed(2);
+                    document.getElementById('sliderTunerC').value = Math.min(20, C_val).toFixed(2);
                 }
-            } else if (tunerTopology === 'series_rlc') {
-                // Cancel XL with L and C so net reactance is 0
-                const targetL = 25.0;
-                const X_L = w * (targetL * 1e-9);
-                const X_C_needed = -(XL + X_L);
-                const C_pF = X_C_needed < -0.5 ? (-1 / (w * X_C_needed)) * 1e12 : 100;
-                document.getElementById('sliderTunerL').value = targetL.toFixed(1);
-                document.getElementById('sliderTunerC').value = Math.max(0.5, Math.min(200, C_pF)).toFixed(1);
+            } else if (tunerTopology === 'l_hp') {
+                if (RL > 0) {
+                    const Q = Math.max(0.1, Math.abs(XL) / Math.max(1, RL) + 0.5);
+                    const C_val = Math.max(0.05, (1 / (w * Q * RL)) * 1e12 * 5);
+                    const L_val = Math.max(0.05, (Q * Z0 / w) * 1e9 * 0.2);
+                    document.getElementById('sliderTunerL').value = Math.min(25, L_val).toFixed(2);
+                    document.getElementById('sliderTunerC').value = Math.min(20, C_val).toFixed(2);
+                }
             } else {
-                // Parallel RLC: cancel susceptance BL
-                const YL = CMath.inv({ re: RL, im: XL });
-                const targetL = 25.0;
-                const B_L = -1 / (w * targetL * 1e-9);
-                const B_C_needed = -(YL.im + B_L);
-                const C_pF = B_C_needed > 0 ? (B_C_needed / w) * 1e12 : 1.0;
-                document.getElementById('sliderTunerL').value = targetL.toFixed(1);
-                document.getElementById('sliderTunerC').value = Math.max(0.5, Math.min(200, C_pF)).toFixed(1);
+                // Default fallback
+                document.getElementById('sliderTunerL').value = "4.50";
+                document.getElementById('sliderTunerC').value = "1.45";
             }
             updateTuner();
         }
@@ -1535,13 +1717,12 @@
             const bypassL = document.getElementById('bypassL').checked;
             const bypassC = document.getElementById('bypassC').checked;
 
-            // Update slider labels
             document.getElementById('valTunerFreq').innerText = fMHz >= 1000 ? (fMHz / 1000).toFixed(3) + ' GHz' : fMHz.toFixed(1) + ' MHz';
             document.getElementById('tunerHudFreq').innerText = 'f₀ = ' + (fMHz >= 1000 ? (fMHz / 1000).toFixed(3) + ' GHz' : fMHz.toFixed(1) + ' MHz');
             document.getElementById('valTunerRL').innerText = RL.toFixed(1) + ' Ω';
             document.getElementById('valTunerXL').innerText = (XL >= 0 ? '+' : '') + XL.toFixed(1) + ' Ω';
-            document.getElementById('valTunerL').innerText = bypassL ? 'BYPASS' : L_nH.toFixed(1) + ' nH';
-            document.getElementById('valTunerC').innerText = bypassC ? 'BYPASS' : C_pF.toFixed(1) + ' pF';
+            document.getElementById('valTunerL').innerText = bypassL ? 'BYPASS' : L_nH.toFixed(2) + ' nH';
+            document.getElementById('valTunerC').innerText = bypassC ? 'BYPASS' : C_pF.toFixed(2) + ' pF';
 
             const w = 2 * Math.PI * fHz;
             const reactL = w * L_nH * 1e-9;
@@ -1558,47 +1739,39 @@
             const s11dB = 20 * Math.log10(Math.max(1e-5, gammaMag));
             const vswr = (1 + gammaMag) / (1 - gammaMag);
             const mismatchLoss = -10 * Math.log10(Math.max(1e-6, 1 - gammaMag * gammaMag));
+            const powerTransferPct = (1 - gammaMag * gammaMag) * 100;
 
-            // Update Telemetry Readouts
             document.getElementById('readoutZL').innerText = `${RL.toFixed(1)} ${XL >= 0 ? '+' : '-'} j${Math.abs(XL).toFixed(1)} Ω`;
             document.getElementById('readoutZin').innerText = `${zIn.re.toFixed(1)} ${zIn.im >= 0 ? '+' : '-'} j${Math.abs(zIn.im).toFixed(1)} Ω`;
             document.getElementById('readoutYin').innerText = `${(yIn.re * 1000).toFixed(1)} ${yIn.im >= 0 ? '+' : '-'} j${Math.abs(yIn.im * 1000).toFixed(1)} mS`;
             document.getElementById('readoutGamma').innerText = `${gammaMag.toFixed(2)} ∠ ${gammaAng.toFixed(0)}°`;
             document.getElementById('readoutS11').innerText = `${s11dB.toFixed(1)} dB`;
             document.getElementById('readoutVSWR').innerText = vswr > 50 ? '> 50' : vswr.toFixed(2);
-            document.getElementById('readoutLoss').innerText = `${mismatchLoss.toFixed(2)} dB`;
+            document.getElementById('readoutLoss').innerText = `${mismatchLoss.toFixed(2)} dB (${powerTransferPct.toFixed(1)}% Power Transferred)`;
 
-            // Update Romanian Tutor Context
-            updateTunerTutorMessage(zIn, s11dB, bypassL, bypassC);
+            const rHigh = Math.max(50, RL);
+            const rLow = Math.min(50, RL);
+            const qNet = (tunerTopology === 'l_lp' || tunerTopology === 'l_hp') && rLow > 0 ? Math.sqrt(Math.max(0, rHigh / rLow - 1)) : 0;
+            const bwMHz = qNet > 0.05 ? (fMHz / qNet) : 0;
 
-            // Render Schematic SVG & Smith Chart Canvas
+            const eqBox = document.getElementById('tunerLiveEquations');
+            if (eqBox) {
+                eqBox.innerHTML = `
+                    <div class="bg-slate-900/90 p-2 rounded border border-slate-800/80 space-y-0.5">
+                        <div class="text-slate-400 text-[10px]">1. Component Reactances at f₀ = ${fMHz.toFixed(0)} MHz:</div>
+                        <div class="text-rose-300">X_L = 2π·f₀·L = <span class="text-white font-bold">+${reactL.toFixed(2)} Ω</span></div>
+                        <div class="text-cyan-300">X_C = -1/(2π·f₀·C) = <span class="text-white font-bold">${reactC.toFixed(2)} Ω</span></div>
+                    </div>
+                    <div class="bg-slate-900/90 p-2 rounded border border-slate-800/80 space-y-0.5">
+                        <div class="text-slate-400 text-[10px]">2. Two-Stage Impedance & Network Q:</div>
+                        <div class="text-slate-200">Z_mid = <span class="text-white font-bold">${zMid.re.toFixed(1)}${zMid.im>=0?'+':'-'}j${Math.abs(zMid.im).toFixed(1)}Ω</span> → Z_in = <span class="text-emerald-400 font-bold">${zIn.re.toFixed(1)}${zIn.im>=0?'+':'-'}j${Math.abs(zIn.im).toFixed(1)}Ω</span></div>
+                        <div class="text-amber-300">Q_net = √(R_hi/R_lo - 1) = <span class="text-white font-bold">${qNet.toFixed(2)}</span> ${bwMHz > 0 ? `(BW ≈ ${bwMHz.toFixed(0)} MHz)` : ''}</div>
+                    </div>
+                `;
+            }
+
             renderTunerSchematic(RL, XL, L_nH, C_pF, bypassL, bypassC);
             drawTunerSmithChart(fHz, zLoad, L_nH, C_pF, bypassL, bypassC, zMid, zIn);
-        }
-
-        function updateTunerTutorMessage(zIn, s11dB, bypassL, bypassC) {
-            const tutorBox = document.getElementById('tunerTutorText');
-            let matchQuality = "";
-            if (s11dB <= -20) {
-                matchQuality = `<span class="text-emerald-400 font-bold">Adaptare excelentă (${s11dB.toFixed(1)} dB)!</span> Peste 99% din putere ajunge în sarcină.`;
-            } else if (s11dB <= -10) {
-                matchQuality = `<span class="text-sky-400 font-bold">Adaptare acceptabilă (${s11dB.toFixed(1)} dB).</span> Mai ajustează fin L și C spre centrul diagramei.`;
-            } else {
-                matchQuality = `<span class="text-amber-400 font-bold">Dezadaptare puternică (${s11dB.toFixed(1)} dB).</span> O mare parte din semnal se reflectă înapoi în VNA.`;
-            }
-
-            let ruleHint = "";
-            if (tunerTopology === 'l_lp') {
-                ruleHint = "<strong>L-Net Low-Pass:</strong> Inductanța <em>L în serie</em> (arcul roșu) urcă punctul în sens orar pe cercul de rezistență constantă R, iar capacitatea <em>C în paralel</em> (arcul cyan) coboară punctul pe cercul mov de conductanță constantă G.";
-            } else if (tunerTopology === 'l_hp') {
-                ruleHint = "<strong>L-Net High-Pass:</strong> Capacitatea <em>C în serie</em> (arcul roșu) coboară punctul în sens antiorar pe cercul R, iar inductanța <em>L în paralel</em> (arcul cyan) urcă punctul pe cercul de conductanță G.";
-            } else if (tunerTopology === 'series_rlc') {
-                ruleHint = "<strong>Serie Pur:</strong> Ambele elemente sunt în serie, deci traiectoria rămâne blocată pe același cerc de rezistență R = " + zIn.re.toFixed(1) + " Ω. Poți anula reactanța (j0), dar nu poți schimba partea reală!";
-            } else {
-                ruleHint = "<strong>Paralel Pur:</strong> Ambele elemente sunt în paralel, deci traiectoria rămâne blocată pe același cerc de conductanță G. Poți anula susceptanța, dar rezistența paralelă rămâne fixă!";
-            }
-
-            tutorBox.innerHTML = `${matchQuality}<br><span class="text-slate-400 mt-1 block">${ruleHint}</span>`;
         }
 
         function renderTunerSchematic(RL, XL, L_nH, C_pF, bypassL, bypassC) {
@@ -1610,45 +1783,37 @@
             let svgBody = '';
             if (tunerTopology === 'l_lp') {
                 svgBody = `
-                    <!-- Port 1 -->
                     <circle cx="45" cy="42" r="5" fill="#38bdf8"/>
                     <text x="45" y="25" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="monospace">PORT 1 (50Ω)</text>
                     <line x1="50" y1="42" x2="140" y2="42" stroke="#64748b" stroke-width="2"/>
-                    <!-- Shunt C -->
                     <line x1="140" y1="42" x2="140" y2="62" stroke="#22d3ee" stroke-width="2"/>
                     <line x1="128" y1="62" x2="152" y2="62" stroke="#22d3ee" stroke-width="2.5"/>
                     <line x1="128" y1="68" x2="152" y2="68" stroke="#22d3ee" stroke-width="2.5"/>
                     <line x1="140" y1="68" x2="140" y2="84" stroke="#22d3ee" stroke-width="2"/>
                     <line x1="132" y1="84" x2="148" y2="84" stroke="#64748b" stroke-width="2"/>
                     <text x="160" y="69" fill="#22d3ee" font-size="10" font-family="monospace">C: ${cText}</text>
-                    <!-- Series L -->
                     <line x1="140" y1="42" x2="230" y2="42" stroke="#64748b" stroke-width="2"/>
                     <rect x="230" y="32" width="60" height="20" rx="4" fill="#1e293b" stroke="#f43f5e" stroke-width="2"/>
                     <text x="260" y="24" fill="#fb7185" font-size="10" text-anchor="middle" font-family="monospace">L: ${lText}</text>
                     <line x1="290" y1="42" x2="365" y2="42" stroke="#64748b" stroke-width="2"/>
-                    <!-- Load -->
                     <rect x="365" y="27" width="80" height="30" rx="5" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
                     <text x="405" y="46" fill="#fbbf24" font-size="10" text-anchor="middle" font-family="monospace">${loadText}</text>
                 `;
             } else if (tunerTopology === 'l_hp') {
                 svgBody = `
-                    <!-- Port 1 -->
                     <circle cx="45" cy="42" r="5" fill="#38bdf8"/>
                     <text x="45" y="25" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="monospace">PORT 1 (50Ω)</text>
                     <line x1="50" y1="42" x2="140" y2="42" stroke="#64748b" stroke-width="2"/>
-                    <!-- Shunt L -->
                     <line x1="140" y1="42" x2="140" y2="55" stroke="#22d3ee" stroke-width="2"/>
                     <rect x="131" y="55" width="18" height="22" rx="3" fill="#1e293b" stroke="#22d3ee" stroke-width="2"/>
                     <line x1="140" y1="77" x2="140" y2="86" stroke="#22d3ee" stroke-width="2"/>
                     <line x1="132" y1="86" x2="148" y2="86" stroke="#64748b" stroke-width="2"/>
                     <text x="156" y="70" fill="#22d3ee" font-size="10" font-family="monospace">L: ${lText}</text>
-                    <!-- Series C -->
                     <line x1="140" y1="42" x2="245" y2="42" stroke="#64748b" stroke-width="2"/>
                     <line x1="245" y1="30" x2="245" y2="54" stroke="#f43f5e" stroke-width="2.5"/>
                     <line x1="255" y1="30" x2="255" y2="54" stroke="#f43f5e" stroke-width="2.5"/>
                     <text x="250" y="22" fill="#fb7185" font-size="10" text-anchor="middle" font-family="monospace">C: ${cText}</text>
                     <line x1="255" y1="42" x2="365" y2="42" stroke="#64748b" stroke-width="2"/>
-                    <!-- Load -->
                     <rect x="365" y="27" width="80" height="30" rx="5" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
                     <text x="405" y="46" fill="#fbbf24" font-size="10" text-anchor="middle" font-family="monospace">${loadText}</text>
                 `;
@@ -1672,18 +1837,15 @@
                     <circle cx="45" cy="40" r="5" fill="#38bdf8"/>
                     <text x="45" y="24" fill="#94a3b8" font-size="10" text-anchor="middle" font-family="monospace">PORT 1</text>
                     <line x1="50" y1="40" x2="365" y2="40" stroke="#64748b" stroke-width="2"/>
-                    <!-- Parallel L -->
                     <line x1="150" y1="40" x2="150" y2="52" stroke="#f43f5e" stroke-width="2"/>
                     <rect x="141" y="52" width="18" height="22" rx="3" fill="#1e293b" stroke="#f43f5e" stroke-width="2"/>
                     <line x1="150" y1="74" x2="150" y2="85" stroke="#f43f5e" stroke-width="2"/>
                     <text x="165" y="67" fill="#fb7185" font-size="10" font-family="monospace">L:${lText}</text>
-                    <!-- Parallel C -->
                     <line x1="265" y1="40" x2="265" y2="58" stroke="#22d3ee" stroke-width="2"/>
                     <line x1="255" y1="58" x2="275" y2="58" stroke="#22d3ee" stroke-width="2.5"/>
                     <line x1="255" y1="64" x2="275" y2="64" stroke="#22d3ee" stroke-width="2.5"/>
                     <line x1="265" y1="64" x2="265" y2="85" stroke="#22d3ee" stroke-width="2"/>
                     <text x="280" y="66" fill="#22d3ee" font-size="10" font-family="monospace">C:${cText}</text>
-                    <!-- Load -->
                     <rect x="365" y="25" width="80" height="30" rx="5" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
                     <text x="405" y="44" fill="#fbbf24" font-size="10" text-anchor="middle" font-family="monospace">${loadText}</text>
                 `;
@@ -1709,7 +1871,6 @@
             const cy = h * 0.52;
             const radius = Math.min(w, h) * 0.43;
 
-            // Outer unit circle (|Gamma| = 1)
             tCtx.strokeStyle = '#334155';
             tCtx.lineWidth = 2;
             tCtx.beginPath();
@@ -1718,7 +1879,6 @@
             tCtx.fill();
             tCtx.stroke();
 
-            // Real axis
             tCtx.strokeStyle = '#1e293b';
             tCtx.lineWidth = 1;
             tCtx.beginPath();
@@ -1726,9 +1886,7 @@
             tCtx.lineTo(cx + radius, cy);
             tCtx.stroke();
 
-            // Standard Impedance (R & X) circles
-            const rCircles = [0.2, 0.5, 1.0, 2.0, 5.0];
-            rCircles.forEach(r => {
+            [0.2, 0.5, 1.0, 2.0, 5.0].forEach(r => {
                 const rNorm = radius / (1 + r);
                 const cX = cx + radius - rNorm;
                 tCtx.beginPath();
@@ -1736,13 +1894,12 @@
                 tCtx.stroke();
             });
 
-            const xArcs = [0.2, 0.5, 1.0, 2.0, 5.0];
             tCtx.save();
             tCtx.beginPath();
             tCtx.arc(cx, cy, radius, 0, 2 * Math.PI);
             tCtx.clip();
 
-            xArcs.forEach(x => {
+            [0.2, 0.5, 1.0, 2.0, 5.0].forEach(x => {
                 const xNorm = radius / x;
                 tCtx.beginPath();
                 tCtx.arc(cx + radius, cy - xNorm, xNorm, 0, 2 * Math.PI);
@@ -1752,7 +1909,6 @@
                 tCtx.stroke();
             });
 
-            // Optional Admittance (G & B) Circles overlaid (flipped horizontally)
             if (document.getElementById('toggleAdmittance').checked) {
                 tCtx.strokeStyle = 'rgba(168, 85, 247, 0.22)';
                 tCtx.setLineDash([3, 3]);
@@ -1776,32 +1932,6 @@
             }
             tCtx.restore();
 
-            // VSWR = 2.0 target zone ring around center
-            tCtx.strokeStyle = 'rgba(16, 185, 129, 0.25)';
-            tCtx.setLineDash([2, 3]);
-            tCtx.beginPath();
-            tCtx.arc(cx, cy, radius * (1 / 3), 0, 2 * Math.PI);
-            tCtx.stroke();
-            tCtx.setLineDash([]);
-
-            // Frequency Sweep Ghost Curve (±20% around f0)
-            if (document.getElementById('toggleFreqSweepGhost').checked) {
-                tCtx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
-                tCtx.lineWidth = 1.5;
-                tCtx.beginPath();
-                const steps = 40;
-                for (let i = 0; i <= steps; i++) {
-                    const fSweep = fHz * (0.8 + 0.4 * (i / steps));
-                    const res = evaluateCircuitZin(fSweep, zLoad, L_nH, C_pF, bypassL, bypassC);
-                    const g = CMath.zToGamma(res.zIn, 50.0);
-                    const px = cx + g.re * radius;
-                    const py = cy - g.im * radius;
-                    if (i === 0) tCtx.moveTo(px, py); else tCtx.lineTo(px, py);
-                }
-                tCtx.stroke();
-            }
-
-            // Trajectory Arc 1: Z_L -> Z_mid (sweeping Element 1)
             const arcSteps = 45;
             tCtx.strokeStyle = '#f43f5e';
             tCtx.lineWidth = 2.8;
@@ -1815,7 +1945,6 @@
                     }
                 } else if (tunerTopology === 'l_hp') {
                     if (!bypassC && C_pF * frac > 0.01) {
-                        // Sweep C from large (low reactance) to C_pF
                         const cSweep = C_pF / Math.max(0.02, frac);
                         zStep = CMath.add(zLoad, getCapacitorZ(cSweep, fHz));
                     }
@@ -1832,7 +1961,6 @@
             }
             tCtx.stroke();
 
-            // Trajectory Arc 2: Z_mid -> Z_in (sweeping Element 2)
             tCtx.strokeStyle = '#22d3ee';
             tCtx.lineWidth = 2.8;
             tCtx.beginPath();
@@ -1861,7 +1989,6 @@
             }
             tCtx.stroke();
 
-            // Target Center Crosshair (50 Ohm)
             tCtx.strokeStyle = '#64748b';
             tCtx.lineWidth = 1.5;
             tCtx.beginPath();
@@ -1871,7 +1998,6 @@
             tCtx.lineTo(cx, cy + 7);
             tCtx.stroke();
 
-            // Plot Point 1: Load Z_L (Amber)
             const gLoad = CMath.zToGamma(zLoad, 50.0);
             const lx = cx + gLoad.re * radius;
             const ly = cy - gLoad.im * radius;
@@ -1879,20 +2005,7 @@
             tCtx.beginPath();
             tCtx.arc(lx, ly, 6, 0, 2 * Math.PI);
             tCtx.fill();
-            tCtx.strokeStyle = '#000';
-            tCtx.lineWidth = 1.5;
-            tCtx.stroke();
 
-            // Plot Intermediate Point: Z_mid (White)
-            const gMid = CMath.zToGamma(zMid, 50.0);
-            const mx = cx + gMid.re * radius;
-            const my = cy - gMid.im * radius;
-            tCtx.fillStyle = '#f8fafc';
-            tCtx.beginPath();
-            tCtx.arc(mx, my, 4, 0, 2 * Math.PI);
-            tCtx.fill();
-
-            // Plot Final Input Point: Z_in (Bright Green)
             const gIn = CMath.zToGamma(zIn, 50.0);
             const ix = cx + gIn.re * radius;
             const iy = cy - gIn.im * radius;
@@ -1900,11 +2013,7 @@
             tCtx.beginPath();
             tCtx.arc(ix, iy, 7, 0, 2 * Math.PI);
             tCtx.fill();
-            tCtx.strokeStyle = '#022c22';
-            tCtx.lineWidth = 2;
-            tCtx.stroke();
 
-            // Labels
             tCtx.fillStyle = '#94a3b8';
             tCtx.font = '10px "JetBrains Mono", monospace';
             tCtx.fillText('50Ω', cx + 8, cy - 6);
